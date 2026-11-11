@@ -1,0 +1,446 @@
+<!DOCTYPE html><html lang="es" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Atlético Madrid vs Barcelona - ZicoTV</title>
+<style>
+:root {
+--bg-color: #0f172a;
+--card-bg: #1e293b;
+--accent: #38bdf8;
+--accent-hover: #0284c7;
+--text-main: #f8fafc;
+--text-muted: #94a3b8;
+--border: #334155;
+--live-red: #ef4444;
+}
+
+* {
+box-sizing: border-box;
+margin: 0;
+padding: 0;
+font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+body {
+background-color: var(--bg-color);
+color: var(--text-main);
+padding: 12px;
+display: flex;
+justify-content: center;
+min-height: 100vh;
+}
+
+.container {
+max-width: 900px;
+width: 100%;
+}
+
+header {
+text-align: center;
+margin-bottom: 20px;
+}
+
+header h1 {
+font-size: 1.5rem;
+letter-spacing: 1px;
+}
+
+.badge-live {
+background-color: var(--live-red);
+color: white;
+padding: 4px 12px;
+border-radius: 9999px;
+font-size: 0.75rem;
+font-weight: bold;
+display: inline-block;
+margin-bottom: 8px;
+animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+0%, 100% { opacity: 1; }
+50% { opacity: 0.5; }
+}
+
+.match-header {
+background: var(--card-bg);
+border: 1px solid var(--border);
+border-radius: 12px;
+padding: 16px;
+margin-bottom: 20px;
+text-align: center;
+box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.teams {
+display: flex;
+align-items: center;
+justify-content: space-between;
+margin: 12px 0;
+}
+
+.team {
+display: flex;
+flex-direction: column;
+align-items: center;
+gap: 6px;
+width: 38%;
+text-align: center;
+}
+
+.team h2 {
+font-size: 0.95rem;
+word-break: break-word;
+}
+
+.team img {
+width: 48px;
+height: 48px;
+object-fit: contain;
+}
+
+.score {
+font-size: 1.8rem;
+font-weight: bold;
+letter-spacing: 1px;
+width: 24%;
+}
+
+.meta-info {
+color: var(--text-muted);
+font-size: 0.8rem;
+}
+
+.section-title {
+font-size: 1.1rem;
+margin: 20px 0 10px 0;
+border-bottom: 2px solid var(--border);
+padding-bottom: 6px;
+color: var(--accent);
+}
+
+/* Sistema adaptable para móviles, tablets y ordenadores */
+.links-grid {
+display: grid;
+grid-template-columns: 1fr; /* Por defecto en móvil (1 columna) */
+gap: 10px;
+}
+
+@media (min-width: 640px) {
+.links-grid {
+grid-template-columns: repeat(2, 1fr); /* En tablets (2 columnas) */
+}
+.team img {
+width: 60px;
+height: 60px;
+}
+.team h2 {
+font-size: 1.1rem;
+}
+.score {
+font-size: 2.2rem;
+}
+
+@media (min-width: 1024px) {
+.links-grid {
+grid-template-columns: repeat(3, 1fr); /* En ordenadores grandes (3 columnas) */
+}
+body {
+padding: 24px;
+}
+
+
+.stream-card {
+background-color: var(--card-bg);
+border: 1px solid var(--border);
+border-radius: 8px;
+padding: 12px 14px;
+display: flex;
+justify-content: space-between;
+align-items: center;
+text-decoration: none;
+color: var(--text-main);
+transition: border-color 0.2s, transform 0.1s;
+}
+
+.stream-card:hover {
+border-color: var(--accent);
+transform: translateY(-2px);
+}
+
+.stream-info {
+display: flex;
+flex-direction: column;
+overflow: hidden;
+padding-right: 8px;
+}
+
+.stream-name {
+font-weight: 600;
+font-size: 0.9rem;
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+}
+
+.stream-viewers {
+font-size: 0.75rem;
+color: var(--text-muted);
+margin-top: 2px;
+}
+
+.btn-play {
+background-color: var(--accent);
+color: #0f172a;
+padding: 6px 12px;
+border-radius: 6px;
+font-weight: bold;
+font-size: 0.8rem;
+flex-shrink: 0;
+}
+
+.app-download {
+margin-top: 24px;
+background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+border: 1px dashed var(--accent);
+border-radius: 12px;
+padding: 16px;
+text-align: center;
+}
+
+.app-download p {
+font-size: 0.9rem;
+}
+
+.app-links {
+display: flex;
+flex-direction: column;
+gap: 8px;
+margin-top: 10px;
+}
+
+@media (min-width: 480px) {
+.app-links {
+flex-direction: row;
+justify-content: center;
+gap: 16px;
+}
+}
+
+.app-download a {
+color: var(--accent);
+font-weight: bold;
+text-decoration: none;
+font-size: 0.9rem;
+}
+
+.app-download a:hover {
+text-decoration: underline;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<main>
+<!-- Marcador y Evento -->
+<div class="match-header">
+<div class="teams">
+<div class="team">
+<img border="0" src="Web/fueradejuego.png" width="68" height="85">
+<h1>FUERA DE JUEGO</h1>
+</h2>
+</div>
+</div>
+</div>
+
+<!-- Canales Directos -->
+<h3 class="section-title">AGENDA DEPORTIVA</h3>
+<div class="links-grid">
+<a href="https://104game.click/player/3/62" class="stream-card" target="_blank">
+<div class="stream-info">
+<span class="stream-name" title="LA 1 HD"><font size="1">20:45  OSASUNA-ATHL.CLUB DE BILBAO</font></span><font size="1">
+</font>
+</div>
+<span class="btn-play"><font size="1">Ver</font></span><font size="1"> </font>
+</a>
+<a href="https://zicotv.cc/api/player/11" class="stream-card" target="_blank">
+<div class="stream-info">
+<span class="stream-name" title="TDP HD"><font size="1">20:45  OSASUNA-ATHL.CLUB DE BILBAO</font></span><font size="1">
+</font>
+</div>
+<span class="btn-play"><font size="1">Ver</font></span><font size="1"> </font>
+</a>
+<a href="https://bp.zicotv.cc/api/player/2" class="stream-card" target="_blank">
+<div class="stream-info">
+<span class="stream-name" title="D1"><font size="1">20:45  OSASUNA-ATHL.CLUB DE BILBAO</font></span><font size="1">
+</font>
+</div>
+<span class="btn-play"><font size="1">Ver</font></span><font size="1"> </font>
+</a>
+<a href="../../../../api/player/48948" class="stream-card" target="_blank">
+<div class="stream-info">
+<span class="stream-name" title="ESPN Deportes"><font size="1">20:45  OSASUNA-ATHL.CLUB DE BILBAO</font></span><font size="1">
+</font>
+</div>
+<span class="btn-play"><font size="1">Ver</font></span><font size="1"> </font>
+</a>
+<a href="../../../../api/player/49969" class="stream-card" target="_blank">
+<div class="stream-info">
+<span class="stream-name" title="beIN Sports MENA 1"><font size="1">20:45  OSASUNA-ATHL.CLUB DE BILBAO</font></span><font size="1">
+</font>
+</div>
+<span class="btn-play"><font size="1">Ver</font></span><font size="1"> </font>
+</a>
+<a href="../../../../api/player/54271" class="stream-card" target="_blank">
+<div class="stream-info">
+<span class="stream-name" title="LA 1 HD">
+<font size="1">20:45  OSASUNA-ATHL.CLUB DE BILBAO</font></span><font size="1">
+</font>
+</div>
+<span class="btn-play"><font size="1">Ver</font></span><font size="1"> </font>
+</a>
+</div>
+<div class="links-grid">
+<a href="https://rtvelivestream.rtve.es/rtvesec/la1/la1_main_dvr.m3u8" class="stream-card" target="_blank">
+<div class="stream-info">
+<span class="stream-name" title="LA 1 HD"><font size="1">20:45  OSASUNA-ATHL.CLUB DE BILBAO</font></span><font size="1">
+</font>
+</div>
+<span class="btn-play"><font size="1">Ver</font></span><font size="1"> </font>
+</a>
+<a href="https://rtvelivestream.rtve.es/rtvesec/tdp/tdp_main.m3u8" class="stream-card" target="_blank">
+<div class="stream-info">
+<span class="stream-name" title="TDP HD"><font size="1">20:45  OSASUNA-ATHL.CLUB DE BILBAO</font></span><font size="1">
+</font>
+</div>
+<span class="btn-play"><font size="1">Ver</font></span><font size="1"> </font>
+</a>
+<a href="https://bp.zicotv.cc/api/player/2" class="stream-card" target="_blank">
+<div class="stream-info">
+<span class="stream-name" title="D1"><font size="1">20:45  OSASUNA-ATHL.CLUB DE BILBAO</font></span><font size="1">
+</font>
+</div>
+<span class="btn-play"><font size="1">Ver</font></span><font size="1"> </font>
+</a>
+<a href="../../../../api/player/48948" class="stream-card" target="_blank">
+<div class="stream-info">
+<span class="stream-name" title="ESPN Deportes"><font size="1">20:45  OSASUNA-ATHL.CLUB DE BILBAO</font></span><font size="1">
+</font>
+</div>
+<span class="btn-play"><font size="1">Ver</font></span><font size="1"> </font>
+</a>
+<a href="../../../../api/player/49969" class="stream-card" target="_blank">
+<div class="stream-info">
+<span class="stream-name" title="beIN Sports MENA 1"><font size="2">beIN Sports MENA 1</font></span><font size="2">
+<span class="stream-viewers">&#128101; 10 espectadores</span>
+</font>
+</div>
+<span class="btn-play"><font size="2">Ver</font></span><font size="2"> </font>
+</a>
+<a href="../../../../api/player/49969" class="stream-card" target="_blank">
+<div class="stream-info">
+<span class="stream-name" title="beIN Sports MENA 1"><font size="2">beIN Sports MENA 1</font></span><font size="2">
+<span class="stream-viewers">&#128101; 10 espectadores</span>
+</font>
+</div>
+<span class="btn-play"><font size="2">Ver</font></span><font size="2"> </font>
+</a>
+<a href="../../../../api/player/49969" class="stream-card" target="_blank">
+<div class="stream-info">
+<span class="stream-name" title="beIN Sports MENA 1"><font size="2">beIN Sports MENA 1</font></span><font size="2">
+<span class="stream-viewers">&#128101; 10 espectadores</span>
+</font>
+</div>
+<span class="btn-play"><font size="2">Ver</font></span><font size="2"> </font>
+</a>
+<a href="../../../../api/player/49969" class="stream-card" target="_blank">
+<div class="stream-info">
+<span class="stream-name" title="beIN Sports MENA 1"><font size="2">beIN Sports MENA 1</font></span><font size="2">
+<span class="stream-viewers">&#128101; 10 espectadores</span>
+</font>
+</div>
+<span class="btn-play"><font size="2">Ver</font></span><font size="2"> </font>
+</a>
+
+<a href="../../../../api/player/54271" class="stream-card" target="_blank">
+<div class="stream-info">
+<span class="stream-name" title="[DAZN &#127470;&#127481;] Atletico - Barcellona">
+<font size="2">[DAZN &#127470;&#127481;] Atletico - Barcellona</font></span><font size="2">
+<span class="stream-viewers">&#128101; 5 espectadores</span>
+</font>
+</div>
+<span class="btn-play"><font size="2">Ver</font></span><font size="2"> </font>
+</a>
+</div>
+
+
+<!-- Enlaces Web Externos -->
+<h3 class="section-title">Enlaces Web Externos</h3>
+<div class="links-grid">
+<a href="https://dlhd.pk/stream/stream-149.php" class="stream-card" target="_blank">
+<div class="stream-info">
+<span class="stream-name">Español | ESPN · HD</span>
+</div>
+<span class="btn-play">Abrir</span>
+</a>
+<a href="https://streamic.st/e/vip/EN/premiersports1.php" class="stream-card" target="_blank">
+<div class="stream-info">
+<span class="stream-name">English | Premier Sports 1 · UHD</span>
+</div>
+<span class="btn-play">Abrir</span>
+</a>
+<a href="https://taifood-blog.asia/embed/laliga/2026-11-08/atm-bar" class="stream-card" target="_blank">
+<div class="stream-info">
+<span class="stream-name">HD | ESPN+ (EN)</span>
+</div>
+<span class="btn-play">Abrir</span>
+</a>
+<a href="https://lovetier.bz/player/DAZN2DE" class="stream-card" target="_blank">
+<div class="stream-info">
+<span class="stream-name">Deutsch | DAZN 2 Bar · HD</span>
+</div>
+<span class="btn-play">Abrir</span>
+</a>
+<a href="https://xyzstreams.st/embed?beinar" class="stream-card" target="_blank">
+<div class="stream-info">
+<span class="stream-name">&#1575;&#1604;&#1593;&#1585;&#1576;&#1610;&#1577; | BeIN Sports MENA · FHD</span>
+</div>
+<span class="btn-play">Abrir</span>
+</a>
+<a href="https://streamic.st/e/vip/PT/dazn1.php" class="stream-card" target="_blank">
+<div class="stream-info">
+<span class="stream-name">Português | DAZN 1 · UHD</span>
+</div>
+<span class="btn-play">Abrir</span>
+</a>
+</div>
+
+<!-- Opciones Embed -->
+<h3 class="section-title">Opciones Embed</h3>
+<div class="links-grid">
+<a href="https://sportsoonline.click/channels/hd/hd6.php" class="stream-card" target="_blank">
+<div class="stream-info">
+<span class="stream-name">HD6 (SPANISH)</span>
+</div>
+<span class="btn-play">Ver</span>
+</a>
+<a href="https://sportsoonline.click/channels/hd/hd2.php" class="stream-card" target="_blank">
+<div class="stream-info">
+<span class="stream-name">HD2 (ENGLISH)</span>
+</div>
+<span class="btn-play">Ver</span>
+</a>
+<a href="https://sportsoonline.click/channels/bra/br3.php" class="stream-card" target="_blank">
+<div class="stream-info">
+<span class="stream-name">BR3 (BRAZILIAN)</span>
+</div>
+<span class="btn-play">Ver</span>
+</a>
+</div>
+
+
+</body>
+</html>
