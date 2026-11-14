@@ -1337,10 +1337,11 @@
      *  CONFIGURACIÓN
      * ============================================================ */
 
-    // Endpoint del backend. Relativa = mismo dominio (zicotv.cc), evita CORS.
-    // Si sirves esta página desde otro dominio:
-    //   VP.api.base = 'https://zicotv.cc/api/player/';  // requiere CORS
-    VP.api.base = '/api/player/';
+   // Endpoint del backend (absoluto). Así esta página funciona desde
+    // cualquier dominio: el canal 4 resuelve a
+    //   https://zicotv.cc/api/player/4
+    // El modo iframe no necesita CORS; el modo parse sí lo necesita.
+    VP.api.base = 'https://zicotv.cc/api/player/';
 
     // Modo por defecto de la página: 'iframe' o 'parse'.
     VP.config.apiMode = 'iframe';
