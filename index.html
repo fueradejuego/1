@@ -1,2385 +1,341 @@
 <!DOCTYPE html>
-<html lang="es">
+
+<html data-bs-theme="dark" lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="robots" content="noindex, nofollow, noarchive">
-    <title>Reproductor - LaLiga TV Bar</title>
+<script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=R6mfpSPusUPaaolD35Uec0vHzQLdTV6yNaNRQHo7FtMuCsTN5TSYCIR2bNvmG_pMNuXvIKoadcLwWp2fn4EgqQ" charset="UTF-8"></script><script id="aclib" src="//acscdn.com/script/aclib.js" type="text/javascript"></script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Roxiestreams - Watch Live Sports, F1, UFC, NFL, TV</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://roxiestreams.info/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://roxiestreams.info/css/main2.css" rel="stylesheet" type="text/css"/>
+<link href="https://roxiestreams.info/css/buttons.css" rel="stylesheet"/>
+<link href="https://roxiestreams.info/imgs/iconn.png" rel="shortcut icon" type="x-icon">
+<script disable-devtool-auto="" src="https://cdn.jsdelivr.net/npm/disable-devtool/disable-devtool.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js"></script>
+<script src="https://roxiestreams.info/js/clappr.js"></script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-EQ3BHVQGMN"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
 
-    
-            <script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=E0KmyrUGnb-1a2Wrrlv0B49OM23Y56kIbyLNvOvYhNeryISj11omaIML5FAg4X0y" charset="UTF-8"></script><script src="https://cdn.jsdelivr.net/npm/@clappr/player@0.11.16/dist/clappr.min.js"></script>
-        
-    
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+  gtag('config', 'G-EQ3BHVQGMN');
+</script>
+<style>
+        .navbar-brand {
+            color: pink;
+            font-size: 1.3rem;
+            text-decoration: none;
+            margin-top: -3px;
+            font-family: 'Kanit', sans-serif;
+            font-weight: bold;
         }
-
-        html, body {
+        .navbar-brand:hover {
+            text-decoration: underline;
+        }
+        .navbar-nav .nav-link {
+            padding-left: 5px;
+            padding-right: 5px;
+        }
+        .fullplayer {
+            display: flex;
+            justify-content: center;
+            position: relative;
+            height: 80vh;
+            margin-top: 50px;
+        }
+        #playerContainer {
             width: 100%;
             height: 100%;
-            background-color: #000;
+        }
+
+        .embedchat {
+            width: 30%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            margin-left: 10px;
+            border: 1px solid rgba(255, 192, 203, 0.2);
+            border-radius: 8px;
             overflow: hidden;
         }
-
-        #player {
-            position: fixed;
-            inset: 0;
-        }
-
-        [data-player] {
-            width: 100% !important;
-            height: 100% !important;
-        }
-
-        /* Turnstile: invisible salvo que Cloudflare pida interacción; encima de todo. */
-        #zt-turnstile {
-            position: fixed;
-            left: 50%;
-            top: calc(50% + 48px);
-            transform: translateX(-50%);
-            z-index: 10001;
-            display: none;
-        }
-
-        /* Overlay que obliga a un click antes de iniciar la reproducción */
-        #play-overlay {
-            position: fixed;
-            inset: 0;
-            z-index: 9999;
+        .chat-header {
+            padding: 8px;
+            background: #1a1a1a;
+            border-bottom: 1px solid rgba(255, 192, 203, 0.1);
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
-            background-color: #000;
-            cursor: pointer;
         }
-
-        #play-overlay .play-icon {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 76px;
-            height: 76px;
-            border-radius: 50%;
-            background-color: #fff;
-            box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.08), 0 10px 30px rgba(0, 0, 0, 0.55);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        #play-overlay:hover .play-icon {
-            transform: scale(1.06);
-            box-shadow: 0 0 0 12px rgba(255, 255, 255, 0.1), 0 12px 34px rgba(0, 0, 0, 0.6);
-        }
-
-        #play-overlay:active .play-icon {
-            transform: scale(0.97);
-        }
-
-        /* Icono "Play" de Lucide (el set de shadcn/ui), relleno. El triángulo no viene
-           centrado ópticamente en su caja de 24: 2 px a la derecha para que cuadre. */
-        #play-overlay .play-icon::before {
-            content: "";
-            width: 32px;
-            height: 32px;
-            margin-left: 2px;
-            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23111' stroke='%23111' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z'/%3E%3C/svg%3E") center / contain no-repeat;
-        }
-
-        #play-overlay .adblock-required,
-        #play-overlay .sandbox-required,
-        #play-overlay .dl-hint {
-            display: none;
-        }
-
-        #play-overlay.dl .dl-hint {
-            display: block;
-            position: absolute;
-            top: calc(50% + 52px);
-            padding: 0 24px;
-            color: rgba(255, 255, 255, 0.85);
-            font: 500 14px/1.4 system-ui, -apple-system, Arial, sans-serif;
-            text-align: center;
-        }
-
-        #play-overlay.sandboxed .play-icon {
-            display: none;
-        }
-
-        #play-overlay.sandboxed .sandbox-required {
-            display: block;
-            max-width: 340px;
-            padding: 0 24px;
-            color: rgba(255, 255, 255, 0.85);
-            font: 500 15px/1.5 system-ui, -apple-system, Arial, sans-serif;
-            text-align: center;
-        }
-
-        #play-overlay.sandboxed .sandbox-required strong {
-            color: #fff;
-        }
-
-        #play-overlay.adblock .play-icon {
-            display: none;
-        }
-
-        #play-overlay.adblock .adblock-required {
-            display: block;
-            max-width: 320px;
-            padding: 0 24px;
-            color: rgba(255, 255, 255, 0.85);
-            font-family: system-ui, -apple-system, Arial, sans-serif;
-            font-size: 15px;
-            line-height: 1.4;
-            text-align: center;
-        }
-
-        /* Esquina superior izquierda: distintivo EN DIRECTO + nombre del canal */
-        #top-left {
-            position: fixed;
-            top: 12px;
-            left: 16px;
-            z-index: 9990;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        #channel-name {
-            color: rgba(255, 255, 255, 0.85);
-            font-family: system-ui, -apple-system, Arial, sans-serif;
-            font-size: 14px;
-            font-weight: 500;
-            letter-spacing: 0.2px;
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
-            pointer-events: none;
-            user-select: none;
-        }
-
-        /* Distintivo estilo DAZN: solo visible en streams live; click = ir al directo */
-        #live-badge {
-            display: none;
-            align-items: center;
-            gap: 6px;
-            padding: 5px 9px;
-            border: none;
-            border-radius: 6px;
-            background-color: rgba(0, 0, 0, 0.55);
-            color: #fff;
-            font-family: system-ui, -apple-system, Arial, sans-serif;
+        .chat-toggle-btn {
+            background: rgba(255, 192, 203, 0.1);
+            border: 1px solid rgba(255, 192, 203, 0.3);
+            color: pink;
             font-size: 10px;
-            font-weight: 800;
-            letter-spacing: 0.12em;
+            padding: 2px 8px;
+            border-radius: 4px;
+            cursor: pointer;
             text-transform: uppercase;
-            cursor: pointer;
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-            transition: background-color 0.15s ease;
+            font-weight: bold;
         }
-
-        #live-badge:hover { background-color: rgba(0, 0, 0, 0.78); }
-
-        #live-badge .dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background-color: #e62222;
-            animation: zt-pulse 1.2s ease-in-out infinite;
+        .chat-toggle-btn:hover {
+            background: rgba(255, 192, 203, 0.2);
         }
-
-        @keyframes zt-pulse { 50% { opacity: 0.3; } }
-
-        /* Total de espectadores del canal (todos los servidores), junto a "En directo". */
-        #total-viewers {
-            display: none;
-            align-items: center;
-            gap: 5px;
-            padding: 5px 9px;
-            border-radius: 6px;
-            background-color: rgba(0, 0, 0, 0.55);
-            color: #fff;
-            font-family: system-ui, -apple-system, Arial, sans-serif;
-            font-size: 11px;
-            font-weight: 700;
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-        }
-        #total-viewers.visible { display: inline-flex; }
-        #total-viewers svg { width: 12px; height: 12px; opacity: 0.75; }
-
-        /* Distintivo cuando se reproduce desde el CDN exclusivo (premium) */
-        #premium-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 5px 9px;
-            border-radius: 6px;
-            background: linear-gradient(135deg, #f6c945, #d99e12);
-            color: #1a1200;
-            font-family: system-ui, -apple-system, Arial, sans-serif;
-            font-size: 10px;
-            font-weight: 800;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.45);
-            user-select: none;
-            pointer-events: none;
-        }
-
-        #premium-badge svg { width: 11px; height: 11px; }
-
-        /* Esquina superior derecha: botón PiP + marca zicotv.cc */
-        #top-right {
-            position: fixed;
-            top: 12px;
-            right: 16px;
-            z-index: 9990;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        #brand {
-            color: rgba(255, 255, 255, 0.85);
-            font-family: system-ui, -apple-system, Arial, sans-serif;
-            font-size: 14px;
-            font-weight: 700;
-            letter-spacing: 0.2px;
-            text-decoration: none;
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
-            user-select: none;
-            transition: color 0.15s ease;
-        }
-
-        #brand:hover { color: #fff; }
-        /* Embebido en nuestras apps: sin enlace a la web (no abre nada útil dentro). */
-        .zt-app #brand { display: none; }
-        /* La app ya muestra canal/servidor/Premium: sin esto quedaban bajo su botón "Volver". */
-        .zt-app #top-left { display: none; }
-
-        /* Picture-in-Picture */
-        #pip-btn {
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 7px;
-            border: none;
-            border-radius: 8px;
-            background-color: rgba(0, 0, 0, 0.55);
-            color: rgba(255, 255, 255, 0.8);
-            cursor: pointer;
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-            transition: background-color 0.15s ease, color 0.15s ease;
-        }
-
-        #pip-btn:hover { background-color: rgba(0, 0, 0, 0.78); color: #fff; }
-
-        /* Aviso de reconexión (auto-reintento cuando el stream se corta) */
-        #reconnecting {
-            position: fixed;
-            inset: 0;
-            z-index: 9992;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            background-color: rgba(0, 0, 0, 0.4);
-            pointer-events: none;
-        }
-
-        #reconnecting .box {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 9px;
-            padding: 11px 16px;
-            border-radius: 10px;
-            background-color: rgba(0, 0, 0, 0.72);
-            color: #fff;
-            font-family: system-ui, -apple-system, Arial, sans-serif;
-            font-size: 13px;
-            font-weight: 700;
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-        }
-
-        #reconnecting .box .line { display: flex; align-items: center; gap: 9px; }
-
-        #retry-switch {
-            display: none;
-            pointer-events: auto;
-            cursor: pointer;
-            border: none;
-            border-radius: 7px;
-            padding: 6px 13px;
-            font: 700 12px system-ui, -apple-system, Arial, sans-serif;
-            background-color: #e62222;
-            color: #fff;
-        }
-
-        #retry-switch:hover { background-color: #c81c1c; }
-
-        #reconnecting .spin {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            border: 2px solid rgba(255, 255, 255, 0.25);
-            border-top-color: #fff;
-            animation: zt-spin 0.8s linear infinite;
-        }
-
-        @keyframes zt-spin { to { transform: rotate(360deg); } }
-
-        /* Avisos a pantalla completa: límite de conexiones / canal premium */
-        #conn-limit, #premium-gate, #app-gate {
-            position: fixed;
-            inset: 0;
-            /* Por encima del botón de play (#play-overlay, 9999): si no, lo tapaba
-               y la pantalla de app/web bloqueada no se veía. */
-            z-index: 10000;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 24px;
-            text-align: center;
-            background-color: #000;
-            color: #fff;
-            font-family: system-ui, -apple-system, Arial, sans-serif;
-        }
-        #conn-limit.show, #premium-gate.show, #app-gate.show { display: flex; }
-        #conn-limit .t, #premium-gate .t, #app-gate .t { font-size: 16px; font-weight: 700; }
-        #conn-limit .d, #premium-gate .d, #app-gate .d { font-size: 13px; color: rgba(255, 255, 255, 0.6); max-width: 360px; }
-        #app-gate a { margin-top: 6px; display: inline-block; padding: 8px 16px; border-radius: 8px; background: #e62222; color: #fff; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; text-decoration: none; }
-        /* App no oficial avisada: franja abajo con el mensaje (no tapa el vídeo). */
-        #app-warn {
-            position: fixed; left: 0; right: 0; bottom: 0; z-index: 9989;
-            display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap;
-            padding: 6px 12px; background: rgba(230, 34, 34, 0.92); color: #fff;
-            font: 600 12px/1.35 system-ui, -apple-system, Arial, sans-serif; text-align: center;
-        }
-        #app-warn a { color: #fff; font-weight: 800; text-decoration: underline; }
-        #premium-gate .crown { color: #f6c945; }
-        #premium-gate a {
-            margin-top: 6px;
-            display: inline-block;
-            padding: 8px 16px;
-            border-radius: 8px;
-            background: linear-gradient(135deg, #f6c945, #d99e12);
-            color: #1a1200;
-            font-size: 12px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            text-decoration: none;
-        }
-
-        /* ── Selector de servidor (CDN) ──
-           Pastilla arriba a la derecha (junto a PiP y la marca) con el servidor en
-           uso; al pulsarla despliega la lista debajo. Antes era un panel fijo en
-           medio de la derecha que tapaba la imagen. */
-        #cdn-toggle {
-            -webkit-appearance: none;
-            appearance: none;
-            display: none;
-            align-items: center;
-            gap: 7px;
-            height: 30px;
-            padding: 0 10px 0 11px;
-            color: #fff;
-            background: rgba(10, 10, 14, 0.62);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 999px;
-            backdrop-filter: blur(14px) saturate(140%);
-            -webkit-backdrop-filter: blur(14px) saturate(140%);
-            font-family: system-ui, -apple-system, Arial, sans-serif;
-            font-size: 12px;
-            font-weight: 600;
-            line-height: 1;
-            white-space: nowrap;
-            cursor: pointer;
-            transition: background-color 0.15s ease, border-color 0.15s ease;
-        }
-        #cdn-toggle.visible { display: inline-flex; }
-        #cdn-toggle:hover, #cdn-toggle.open { background: rgba(20, 20, 26, 0.85); border-color: rgba(255, 255, 255, 0.22); }
-        #cdn-toggle .t-dot { width: 7px; height: 7px; flex: none; border-radius: 50%; background: #3ddc84; box-shadow: 0 0 0 3px rgba(61, 220, 132, 0.18); }
-        #cdn-toggle .t-dot.premium { background: #f6c945; box-shadow: 0 0 0 3px rgba(246, 201, 69, 0.2); }
-        #cdn-toggle .t-sub { display: inline-flex; align-items: center; gap: 4px; color: rgba(255, 255, 255, 0.5); font-weight: 500; font-variant-numeric: tabular-nums; }
-        #cdn-toggle .t-sub svg { width: 12px; height: 12px; }
-        #cdn-toggle svg.chev { width: 12px; height: 12px; color: rgba(255, 255, 255, 0.6); transition: transform 0.18s ease; }
-        #cdn-toggle.open svg.chev { transform: rotate(180deg); }
-
-        #cdn-switch {
-            position: fixed;
-            top: 50px;
-            right: 16px;
-            z-index: 9992;
-            display: none;
-            flex-direction: column;
-            width: 244px;
-            max-height: calc(100vh - 66px);
-            overflow-y: auto;
-            padding: 6px;
-            background: rgba(14, 14, 19, 0.88);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            box-shadow: 0 18px 50px -12px rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(20px) saturate(140%);
-            -webkit-backdrop-filter: blur(20px) saturate(140%);
-            font-family: system-ui, -apple-system, Arial, sans-serif;
-            transform-origin: top right;
-            animation: cdn-in 0.16s ease-out;
-        }
-        #cdn-switch.visible { display: flex; }
-        /* Espectadores: el número cuenta hasta el nuevo y enseña el cambio (+12 / −5). */
-        .zt-num { position: relative; display: inline-block; font-variant-numeric: tabular-nums; }
-        .zt-num.up { animation: zt-num-up 0.9s ease-out; }
-        .zt-num.down { animation: zt-num-down 0.9s ease-out; }
-        @keyframes zt-num-up { from { color: #3ddc84; } }
-        @keyframes zt-num-down { from { color: #ff5d6c; } }
-        .zt-delta {
-            position: absolute; left: 100%; top: -4px; margin-left: 3px; opacity: 0; pointer-events: none;
-            font-size: 10px; font-weight: 800; white-space: nowrap; animation: zt-delta 1.4s ease-out forwards;
-        }
-        .zt-delta.up { color: #3ddc84; }
-        .zt-delta.down { color: #ff5d6c; }
-        @keyframes zt-delta { 0% { opacity: 0; transform: translateY(4px); } 15% { opacity: 1; } 100% { opacity: 0; transform: translateY(-14px); } }
-        @media (prefers-reduced-motion: reduce) {
-            .zt-num.up, .zt-num.down { animation: none; }
-            .zt-delta { display: none; }
-        }
-        #cdn-switch { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.22) transparent; }
-        #cdn-switch::-webkit-scrollbar { width: 4px; }
-        #cdn-switch::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.22); border-radius: 4px; }
-        @keyframes cdn-in { from { opacity: 0; transform: translateY(-4px) scale(0.98); } }
-
-        #cdn-switch .cdn-head { padding: 8px 10px 9px; }
-        #cdn-switch .cdn-title { display: block; color: #fff; font-size: 13px; font-weight: 700; }
-        #cdn-switch .cdn-hint { display: block; margin-top: 2px; color: rgba(255, 255, 255, 0.45); font-size: 11px; line-height: 1.35; }
-
-        #cdn-switch .cdn-list { display: flex; flex-direction: column; gap: 2px; }
-
-        #cdn-switch button.cdn-item {
-            -webkit-appearance: none;
-            appearance: none;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        #chatContent {
+            flex: 1;
             width: 100%;
-            padding: 9px 10px;
-            color: #fff;
-            background: transparent;
-            border: 1px solid transparent;
-            border-radius: 11px;
-            font-family: inherit;
-            text-align: left;
-            cursor: pointer;
-            transition: background-color 0.14s ease, border-color 0.14s ease;
+            height: 100%;
         }
-        #cdn-switch button.cdn-item:not(.active):hover { background-color: rgba(255, 255, 255, 0.06); }
-        #cdn-switch button.cdn-item.active { background-color: rgba(255, 45, 61, 0.12); border-color: rgba(255, 45, 61, 0.4); cursor: default; }
+        #chatContent iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
 
-        /* Radio: aro vacío; el activo, aro rojo con punto (como el logo) */
-        #cdn-switch .cdn-radio {
-            position: relative;
-            width: 16px;
-            height: 16px;
-            flex: none;
-            box-sizing: border-box;
-            border: 2px solid rgba(255, 255, 255, 0.28);
-            border-radius: 50%;
-        }
-        #cdn-switch button.cdn-item.active .cdn-radio { border-color: #ff2d3d; }
-        #cdn-switch button.cdn-item.active .cdn-radio::after {
-            content: '';
+        .streamchanger {
             position: absolute;
-            inset: 3px;
-            border-radius: 50%;
-            background: #ff2d3d;
+            top: -40px;
+            left: 10px;
+            display: flex;
+            gap: 10px;
         }
-
-        #cdn-switch .cdn-body { display: flex; flex-direction: column; gap: 3px; flex: 1 1 auto; min-width: 0; }
-        #cdn-switch .cdn-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 600; }
-        #cdn-switch .cdn-meta { display: flex; align-items: center; gap: 5px; color: rgba(255, 255, 255, 0.5); font-size: 11px; font-variant-numeric: tabular-nums; }
-        #cdn-switch .cdn-meta svg { width: 11px; height: 11px; flex: none; opacity: 0.8; }
-        #cdn-switch .cdn-meta span { white-space: nowrap; }
-        /* Flussonic mandó a otro nodo: línea propia, que no se monte con los espectadores. */
-        #cdn-switch .cdn-served { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: rgba(246, 201, 69, 0.85); font-size: 11px; }
-
-        #cdn-switch .cdn-tag {
-            display: inline-flex;
-            align-items: center;
-            gap: 3px;
-            flex: none;
-            padding: 3px 7px;
-            border-radius: 999px;
-            font-size: 9px;
-            font-weight: 800;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-            color: #1a1200;
-            background: linear-gradient(135deg, #f6c945, #d99e12);
-        }
-        #cdn-switch .cdn-tag svg { width: 9px; height: 9px; }
-
-        #cdn-switch button.cdn-item.locked .cdn-name { color: rgba(255, 255, 255, 0.6); }
-        #cdn-switch button.cdn-item.locked .cdn-meta { color: rgba(246, 201, 69, 0.9); }
-        #cdn-switch .cdn-locked-note {
-            display: none;
-            margin: 2px 4px 4px;
-            padding: 9px 11px;
-            border-radius: 10px;
-            background-color: rgba(246, 201, 69, 0.1);
-            border: 1px solid rgba(246, 201, 69, 0.22);
-            color: rgba(255, 255, 255, 0.82);
-            font-size: 11px;
-            line-height: 1.4;
-        }
-        #cdn-switch .cdn-locked-note.show { display: block; }
-        #cdn-switch .cdn-locked-note a { color: #f6c945; font-weight: 700; text-decoration: none; }
-
-        @media (max-width: 480px) {
-            #cdn-toggle { height: 28px; padding: 0 9px; font-size: 11.5px; }
-            #cdn-toggle .t-sub { display: none; }
-            #cdn-switch { top: 46px; right: 8px; width: min(244px, calc(100vw - 16px)); }
-        }
-
-        /* Barra de arriba: el nombre del canal nunca se monta sobre la derecha
-           (servidor, PiP, marca): se corta con "…". Las etiquetas no se parten. */
-        #top-left { max-width: calc(100% - 340px); min-width: 0; }
-        #channel-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        #live-badge, #premium-badge, #total-viewers, #brand { flex: none; white-space: nowrap; }
-
-        @media (max-width: 600px) {
-            #top-left, #top-right { top: max(8px, env(safe-area-inset-top, 0px)); gap: 6px; }
-            #top-left { left: max(10px, env(safe-area-inset-left, 0px)); max-width: calc(100% - 175px); }
-            #top-right { right: max(10px, env(safe-area-inset-right, 0px)); }
-            #channel-name { font-size: 12px; }
-            #live-badge, #premium-badge { padding: 4px 7px; font-size: 9px; letter-spacing: 0.08em; }
-            #total-viewers { padding: 4px 7px; font-size: 10px; }
-            #pip-btn { padding: 6px; }
-            #brand { display: none; }
-            #cdn-switch {
-                top: calc(max(8px, env(safe-area-inset-top, 0px)) + 36px);
-                max-height: calc(100vh - max(8px, env(safe-area-inset-top, 0px)) - 44px);
-            }
-        }
-        /* Móvil (vertical: reproductor bajo, 16:9 a lo ancho; horizontal: poca
-           altura): con muchos CDN la lista va en dos columnas y sin la ayuda; el
-           Premium (siempre el primero) y su aviso ocupan la fila entera. Si aun así
-           no cabe, el panel hace scroll. */
-        @media (max-width: 600px), (max-height: 480px) {
-            #cdn-switch { width: min(300px, calc(100vw - 16px)); padding: 5px; }
-            #cdn-switch .cdn-head { padding: 6px 8px 7px; }
-            #cdn-switch .cdn-hint { display: none; }
-            #cdn-switch .cdn-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px; }
-            #cdn-switch button.cdn-item { gap: 7px; padding: 7px 8px; }
-            #cdn-switch button.cdn-item.premium, #cdn-switch .cdn-locked-note { grid-column: 1 / -1; }
-            #cdn-switch .cdn-radio { transform: scale(0.85); }
-            #cdn-switch .cdn-name { font-size: 12.5px; }
-        }
-        /* Reproductor muy bajo (móvil en vertical): sin el título, para que quepan más. */
-        @media (max-height: 260px) {
-            #cdn-switch .cdn-head { display: none; }
-        }
-        @media (max-width: 360px) {
-            #channel-name { display: none; }
-        }
-
-    </style>
-
     
-        <script>
-        var ZT_UMAMI = {"canal":"LaLiga TV Bar","origen":"directo","premium":"no"};
-        window.umamiBeforeSend = function (type, payload) {
-            try { var u = new URL(payload.url, location.href); u.search = ''; u.hash = ''; payload.url = u.toString(); } catch (e) {}
-            return payload;
-        };
-    </script>
-        
-    <script>
-        (function () {
-            var orig = window.open, sent = 0;
-            window.open = function () {
-                var w = null;
-                try { w = orig.apply(window, arguments); } catch (e) { /* noop */ }
-                if (sent < 3) {
-                    sent++;
-                    var data = {}; for (var k in ZT_UMAMI) data[k] = ZT_UMAMI[k];
-                    data.abierto = w ? 'si' : 'no';
-                    (function t(n) {
-                        if (window.umami) { try { window.umami.track('anuncio', data); } catch (e) { /* noop */ } }
-                        else if (n < 20) setTimeout(function () { t(n + 1); }, 500);
-                    })(0);
-                }
-                return w;
-            };
-        })();
-    </script>
-        
-            <script defer src="https://cloud.umami.is/script.js" data-website-id="b67abae4-8268-41c9-8a92-04efdefeeb5d" data-tag="reproductor" data-before-send="umamiBeforeSend"></script>
-</head>
+        /* ---- Phones in PORTRAIT: hide chat, clean player, buttons wrap to fit ---- */
+        @media (max-width: 768px) and (orientation: portrait) {
+            .fullplayer {
+                flex-direction: column;
+                height: auto;
+                margin-top: 12px;
+            }
+            #playerContainer {
+                width: 100%;
+                height: 72vh;
+            }
+            .embedchat {
+                display: none;
+            }
+            .streamchanger {
+                position: static;
+                order: -1;
+                top: auto;
+                left: auto;
+                width: 100%;
+                margin: 0 0 10px;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 8px;
+            }
+            .streamchanger .streambutton {
+                flex: 0 0 auto;
+                white-space: nowrap;
+                margin-right: 0;
+                padding-left: 12px;
+                padding-right: 12px;
+            }
+        }
+    </style>
+</link></head>
 <body>
-
-<div id="player"></div>
-
-<div id="top-left">
-    <button id="live-badge" type="button" title="Ir al directo"><span class="dot"></span>En directo</button>
-        <span id="total-viewers" title="Espectadores ahora (todos los servidores)"></span>
-    <div id="channel-name">LaLiga TV Bar</div>
+<nav class="navbar navbar-expand-lg bg-black">
+<div class="container-fluid">
+<a class="navbar-brand" href="https://roxiestreams.info/">FUERA DE JUEGO</a>
+<button aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation" class="navbar-toggler" data-bs-target="#navbarSupportedContent" data-bs-toggle="collapse" type="button">
+<span class="navbar-toggler-icon"></span>
+</button>
+<div class="collapse navbar-collapse" id="navbarSupportedContent">
+<ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item"><a class="nav-link" href="https://roxiestreams.info/soccer">Soccer</a></li>
+<li class="nav-item"><a class="nav-link" href="https://roxiestreams.info/mlb">MLB</a></li>
+<li class="nav-item"><a class="nav-link" href="https://roxiestreams.info/nba">NBA</a></li>
+<li class="nav-item"><a class="nav-link" href="https://roxiestreams.info/nfl">NFL</a></li>
+<li class="nav-item"><a class="nav-link" href="https://roxiestreams.info/nhl">NHL</a></li>
+<li class="nav-item"><a class="nav-link" href="https://roxiestreams.info/fighting">Fighting</a></li>
+<li class="nav-item"><a class="nav-link" href="https://roxiestreams.info/motorsports">Motorsports</a></li>
+<li class="nav-item"><a class="nav-link" href="https://discord.gg/DT9g7K3ZSM">Stream Request (Discord)</a></li>
+</ul><ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+<li class="nav-item">
+<a class="nav-link d-flex align-items-center gap-1" href="https://roxiestreams.info/multiview">
+<svg fill="currentColor" height="16" viewbox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 1.5A1.5 1.5 0 0 1 1.5 0h13A1.5 1.5 0 0 1 16 1.5v13a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 14.5v-13zM1.5 1a.5.5 0 0 0-.5.5V7h6V1H1.5zM7 8H1v6.5a.5.5 0 0 0 .5.5H7V8zm1 0v7h6.5a.5.5 0 0 0 .5-.5V8H8zm0-1h7V1.5a.5.5 0 0 0-.5-.5H8v6z"></path>
+</svg>
+        MultiView
+    </a>
+</li>
+</ul>
 </div>
-
-<div id="top-right">
-    <button id="cdn-toggle" type="button" aria-haspopup="true" aria-expanded="false" title="Servidor de vídeo"></button>
-    <button id="pip-btn" type="button" title="Ver en ventana flotante">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 9V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v10c0 1.1.9 2 2 2h4"/><rect width="10" height="7" x="12" y="13" rx="2"/></svg>
-    </button>
-    <a id="brand" href="https://zicotv.cc" target="_blank" rel="noopener">zicotv.cc</a>
 </div>
-
-<div id="reconnecting"><div class="box">
-    <span class="line"><span class="spin"></span><span class="msg">Conectando…</span></span>
-    <button id="retry-switch" type="button">Probar otro servidor</button>
-</div></div>
-
-<div id="conn-limit">
-    <div class="t">Límite de conexiones alcanzado</div>
-    <div class="d" id="conn-limit-msg">Se ha alcanzado el número máximo de reproducciones simultáneas de esta cuenta. Cierra otra pestaña o dispositivo e inténtalo de nuevo.</div>
+</nav>
+<div class="container container-fluid pt-2 text-white">
+<div class="fullplayer">
+<div id="playerContainer"></div>
+<div class="streamchanger">
+<button class="streambutton" onclick="showPlayer('clappr', getRandomStream('fs2.m3u8', 'admin2'))">Stream 1</button>
 </div>
-
-
-<div id="premium-gate">
-    <div class="t"><span class="crown">★</span> Canal Premium</div>
-    <div class="d">Este canal es exclusivo para usuarios Premium.</div>
-    <a href="https://zicotv.cc/premium" target="_blank" rel="noopener">Hazte Premium</a>
+<div class="embedchat">
+<div class="chat-header">
+<span style="font-size: 10px; color: pink; font-weight: bold;">LIVE CHAT</span>
+<button class="chat-toggle-btn" id="toggleChat">Switch to Chatango</button>
 </div>
-
-<div id="cdn-switch"></div>
-
-
-
-<div id="play-overlay">
-    <div class="play-icon"></div>
-    <p class="adblock-required">Desactiva el bloqueador de anuncios y recarga la página para ver el directo.</p>
-    <p class="sandbox-required">Esta web no deja funcionar nuestro reproductor.<br>Míralo gratis en <strong>bp.zicotv.cc</strong></p>
-    <p class="dl-hint"></p>
-    </div>
-
+<div id="chatContent">
+<iframe src="https://www.youtube.com/live_chat?v=K5tlSOUSRXY&amp;embed_domain=roxiestreams.info&amp;dark_theme=1"></iframe>
+</div>
+</div>
+</div>
+</div>
+<footer class="container-fluid d-flex flex-column flex-lg-row justify-content-lg-between align-items-center py-2 border-top mt-5">
+<ul class="nav justify-content-center justify-content-lg-start mb-2 mb-lg-0">
+<li class="nav-item"><a class="nav-link px-2 text-body-secondary" href="https://discord.gg/DT9g7K3ZSM">Stream Request (Discord)</a></li>
+</ul>
+<p class="mb-0 text-body-secondary text-center text-lg-start">FUERA DE JUEGO</p>
+</footer>
 <script>
-    // Traducciones de los mensajes del reproductor (texto fuente en español).
-    var ZT_I18N = {"Marca la casilla de verificación para ver el directo":"Marca la casilla de verificación para ver el directo","Verificando conexión…":"Verificando conexión…","No se ha podido verificar la conexión. Prueba otro navegador o desactiva extensiones que bloqueen Cloudflare.":"No se ha podido verificar la conexión. Prueba otro navegador o desactiva extensiones que bloqueen Cloudflare.","Conectando…":"Conectando…","Pulsa otra vez para ver el directo ({n} más)":"Pulsa otra vez para ver el directo ({n} más)","Pulsa otra vez para ver el directo":"Pulsa otra vez para ver el directo","No se ha podido verificar la conexión. Recarga la página.":"No se ha podido verificar la conexión. Recarga la página.","Iniciando el canal… puede tardar unos segundos":"Iniciando el canal… puede tardar unos segundos","Reconectando…":"Reconectando…","Iniciando servidor premium…":"Iniciando servidor premium…","Se ha cortado la conexión. Recarga la página.":"Se ha cortado la conexión. Recarga la página.","No se pudo conectar":"No se pudo conectar","{n} viendo":"{n} viendo","desde {server}":"desde {server}","Servidor de vídeo":"Servidor de vídeo","Si se corta o va a saltos, prueba otro.":"Si se corta o va a saltos, prueba otro.","Exclusivo Premium":"Exclusivo Premium","Ahora te sirve {server}":"Ahora te sirve {server}","Este servidor no tiene el canal en marcha y te pasa al que sí lo tiene.":"Este servidor no tiene el canal en marcha y te pasa al que sí lo tiene.","Servidor exclusivo para usuarios Premium.":"Servidor exclusivo para usuarios Premium.","Hazte Premium":"Hazte Premium"};
-    var ZT_INTL = "es-ES";
-    function zt(s, vars) {
-        var out = ZT_I18N[s] || s;
-        if (vars) for (var k in vars) out = out.split('{' + k + '}').join(String(vars[k]));
-        return out;
+var clapprPlayer;
+var currentChat = 'yt';
+var domains = [];
+var subdomain = 'admin2';  // Edit this per HTML file
+
+// Load domains from txt file
+fetch('domainsz77.txt')
+  .then(response => response.text())
+  .then(data => {
+    domains = data.trim().split('\n').filter(d => d.trim());
+    // Auto-load initial stream after domains load
+    setTimeout(() => showPlayer('clappr', getRandomStream('fs2.m3u8')), 500);
+  })
+  .catch(() => {
+    console.error('Failed to load domainsz77.txt');
+  });
+
+function getRandomStream(streamPath, subdomain = 'admin2') {
+  if (domains.length === 0) {
+    return `https://${subdomain}.shadow-ran.online/${streamPath}`; // Fallback
+  }
+  const randomDomain = domains[Math.floor(Math.random() * domains.length)];
+  return `https://${subdomain}.${randomDomain}/${streamPath}`;
+}
+
+function playIframePlayer(src) {
+  var container = document.getElementById('playerContainer');
+
+  if (typeof clapprPlayer !== 'undefined' && clapprPlayer) {
+    clapprPlayer.destroy();
+    clapprPlayer = null;
+  }
+  if (typeof shakaPlayer !== 'undefined' && shakaPlayer) {
+    shakaPlayer.destroy();
+    shakaPlayer = null;
+  }
+  if (typeof shakaUI !== 'undefined' && shakaUI) {
+    shakaUI.destroy();
+    shakaUI = null;
+  }
+
+  // Rebuild the iframe each call so re-pressing the button reloads the stream
+  container.innerHTML = '';
+  var iframe = document.createElement('iframe');
+  iframe.id = 'stream1pc-iframe';
+  iframe.allowFullscreen = true;
+  iframe.src = src;
+  iframe.style.width = '100%';
+  iframe.style.height = '100%';
+  iframe.style.border = 'none';
+  iframe.style.display = 'block';
+  container.appendChild(iframe);
+}
+
+function showPlayer(playerType, stream) {
+  if (playerType === "clappr") {
+    var __pcFrame = document.getElementById('stream1pc-iframe');
+    if (__pcFrame) __pcFrame.remove();
+    if (clapprPlayer) {
+      clapprPlayer.destroy();
     }
+    clapprPlayer = new Clappr.Player({
+      source: stream,
+      parentId: "#playerContainer",
+      height: '100%',
+      width: '100%',
+      autoPlay: true,
+      mediacontrol: ClapprPinkTheme.mediacontrol,
+      playback: {
+        playInline: true,
+        recycleVideo: true
+      },
+    });
+  }
+}
 
-    // Reproductor de ZicoTV. Alrededor van nuestros anuncios, el selector de CDN,
-    // el beacon de reproducción y el límite de conexiones. El motor concreto
-    // (Clappr o Video.js) queda detrás del adaptador `ztEngine`, que expone una
-    // API uniforme (volumen siempre 0–100) para que el resto del script no
-    // dependa de un motor.
-    var ZT_ENGINE = "clappr";
-    // P2P (SwarmCloud): {token} si está activo para este player; null si no.
-    var ZT_P2P = null;
-    // Clics en el play que abren el directlink antes de arrancar (Ajustes → Anuncios).
-    var ztPlayDlLeft = 0;
-    var ZT_DL_URL = "https:\/\/pulseadnetwork.com\/jump\/next.php?r=12366290";
-    // Pre-roll de vídeo (VAST) cuando nos carga una app de terceros: {url, gap} o null.
-    var ZT_VAST = null;
-    var ztVastRun = false;
-    // Anti-adblock: si está activo, el player no reproduce mientras haya un bloqueador.
-    var ZT_BLOCK_ADBLOCK = true;
-    var ztStarted = false;
-    var ZT_PLAYED_URL = null;
+window.onload = function() {
+        var toggleBtn = document.getElementById('toggleChat');
+        var chatContent = document.getElementById('chatContent');
 
-    // Límite de conexiones por token (clientes de API con max_connections).
-    var ZT_CONN_TOKEN  = null;
-    var ZT_CONN_HB_URL = null;
-    var ZT_CONN_LIMIT  = false;
-    var ZT_PREMIUM_GATE = false;
-    var ZT_APP_GATE = false;
-    var ZT_CONN_MAX    = 0;
+        if (toggleBtn) {
+            toggleBtn.onclick = function() {
+                if (currentChat === 'yt') {
+                    chatContent.innerHTML = '';
 
-    // CDNs disponibles (mismo token, distinto host): [{label, url}, ...] en forma
-    // .m3u8 (lo que reproduce el player). La 1ª reproduce por defecto.
-    var ZT_SOURCES = [{"url":null,"label":"CDN 8 Draco","premium":false},{"url":null,"label":"CDN 6 Draco","premium":false},{"url":null,"label":"CDN 7 Draco","premium":false},{"url":null,"label":"CDN 5 N\u00e9bula","premium":false},{"url":null,"label":"CDN 4 Tit\u00e1n Ocaso","premium":false},{"url":null,"label":"CDN 3 Tit\u00e1n Ocaso","premium":false},{"url":null,"label":"CDN 2 Nova","premium":false},{"url":null,"label":"CDN 1 Nova","premium":false,"hidden":true},{"url":null,"label":"CDN Premium Nova","premium":true,"locked":true}];
-    var ZT_STREAM_URL = null;
-    // Tráfico anónimo: las URLs no vienen en el HTML; se piden a ZT_SRC_GATE.url
-    // tras pasar Cloudflare Turnstile (ver ztEnsureSources). null = ya vienen.
-    var ZT_SRC_GATE = null;
-    // Token corto (player anónimo sin Turnstile): las URLs de la página caducan a
-    // los ZT_RENEW.ttl s y se piden nuevas a ZT_RENEW.url mientras se ve. null = 3 h.
-    var ZT_RENEW = {"url":"\/api\/player\/4\/renew?expires=1794768712\u0026signature=eb23adac51f2e843e74c8776dc1831caad528c420740e3023a392c5871ceff2e","ttl":1200,"view":true};
-    var ZT_TS_LOG_URL = null;
-    // Embebido en nuestras apps (?app=1): el selector de servidor lo dibuja la app.
-    var ZT_APP = false;
-    if (ZT_APP) document.documentElement.classList.add('zt-app');
-    var ZT_CDN_VIEWERS_URL = "\/api\/player\/4\/cdn-viewers";
-    var ZT_VIEWERS_WS = {"key":"8c734f6606e12e50e65bc7f7e7db88baa53aa249","host":"ws1.eventsocket.com","channel":4};
-    var ztSourceIdx = 0;
-    var ztViewers = {}; // label -> nº de espectadores (o null/undefined si aún no se sabe)
+                    var script = document.createElement('script');
+                    script.id = 'cid0020000123456789012';
+                    script.async = true;
+                    script.src = 'https://st.chatango.com/js/gz/emb.js';
 
-    // ¿Lista de servidores desplegada? Arranca siempre cerrada: la pastilla de
-    // arriba a la derecha ya dice qué servidor se usa. En modo app no se muestra.
-    var ztPanelOpen = false;
+                    var config = {
+                        handle: 'roxiestreams',
+                        arch: 'js',
+                        styles: {
+                            a: '1a1a1a',
+                            b: 100,
+                            c: 'ffffff',
+                            d: 'ffffff',
+                            e: '1a1a1a',
+                            f: '000000',
+                            g: 'ffffff',
+                            h: '000000',
+                            i: 100,
+                            j: 'ffffff',
+                            k: 'e573b5',
+                            l: '1a1a1a',
+                            m: 'ffffff',
+                            n: 'ffffff',
+                            q: '1a1a1a',
+                            r: 100,
+                            t: 0,
+                            v: 0,
+                            w: 0
+                        }
+                    };
 
-    function currentStreamUrl() {
-        var s = ZT_SOURCES[ztSourceIdx];
-        return (s && s.url) || ZT_STREAM_URL || '';
-    }
-
-    function isPremiumSource(i) {
-        return !!(ZT_SOURCES[i] && ZT_SOURCES[i].premium);
-    }
-
-    // Los canales arrancan en frío (ondemand en Flussonic y el O11 parado hasta
-    // que se pide): la playlist tarda ~10 s y el primer segmento ~14 s (medido
-    // 2026-10-17). El timeout por defecto de hls.js (10 s) lo leía como error, así
-    // que en todos los servidores se dan 30 s a la playlist y a los segmentos.
-    // Con token corto (ZT_RENEW), cada petición de hls.js sale con el token más
-    // reciente: la URL ya cargada sigue funcionando aunque caduque el de la página.
-    function ztHlsConfig() {
-        var cfg = { manifestLoadingTimeOut: 30000, levelLoadingTimeOut: 30000, fragLoadingTimeOut: 30000 };
-        if (ZT_RENEW) {
-            cfg.xhrSetup = function (xhr, url) {
-                if (ztTokenStale(0.75)) ztRenewTokens();
-                var fresh = ztFreshUrl(url);
-                if (fresh !== url) xhr.open('GET', fresh, true);
+                    script.innerHTML = JSON.stringify(config);
+                    chatContent.appendChild(script);
+                    toggleBtn.innerText = 'Switch to YouTube';
+                    currentChat = 'chatango';
+                } else {
+                    chatContent.innerHTML = '<iframe src="https://www.youtube.com/live_chat?v=K5tlSOUSRXY&amp;embed_domain=roxiestreams.info&amp;dark_theme=1"></iframe>';
+                    toggleBtn.innerText = 'Switch to Chatango';
+                    currentChat = 'yt';
+                }
             };
         }
-        return cfg;
-    }
-
-    // --- Servidor que sirve DE VERDAD el vídeo ----------------------------------
-    // Flussonic (mismo cluster_key) puede responder 302 hacia otro nodo cuando el
-    // stream está parado en el elegido pero ya corre en otro (p. ej. Premium → CDN 1).
-    // El motor sigue la redirección sin avisar, así que se pide la playlist aparte
-    // y se mira la URL final. ztServedIdx: índice en ZT_SOURCES del CDN real, -1 si
-    // es el elegido; ztServedHost: host real si no está en la lista.
-    var ztServedIdx = -1;
-    var ztServedHost = null;
-    var ztServedCheck = 0; // invalida respuestas de comprobaciones anteriores
-
-    function hostOf(url) {
-        try { return new URL(url, location.href).hostname; } catch (e) { return ''; }
-    }
-
-    function detectServingCdn() {
-        var check = ++ztServedCheck;
-        var url = currentStreamUrl();
-        ztServedIdx = -1;
-        ztServedHost = null;
-        if (!window.fetch || !url) return;
-        fetch(url, { cache: 'no-store' })
-            .then(function (r) {
-                if (check !== ztServedCheck) return;
-                var finalHost = hostOf(r.url || '');
-                if (!finalHost || finalHost === hostOf(url)) return;
-                var idx = -1;
-                for (var i = 0; i < ZT_SOURCES.length; i++) {
-                    if (ZT_SOURCES[i] && ZT_SOURCES[i].url && hostOf(ZT_SOURCES[i].url) === finalHost) { idx = i; break; }
-                }
-                ztServedIdx = idx;
-                ztServedHost = idx === -1 ? finalHost : null;
-                buildCdnSwitch();
-            })
-            .catch(function () { /* sin CORS / red: se deja la etiqueta del elegido */ });
-    }
-
-    // Nombre del servidor que sirve de verdad (o null si es el elegido).
-    function servedLabel() {
-        if (ztServedIdx !== -1 && ztServedIdx !== ztSourceIdx) return cdnLabel(ztServedIdx);
-        return ztServedHost;
-    }
-
-    // --- Adaptador de motor de reproducción -------------------------------------
-    // `ztEngine` uniforma Clappr y Video.js. Métodos que consume el resto del
-    // script: create/destroy, play/pause, isPlaying, getVolume/setVolume (0–100),
-    // getDuration, seek, isLive, toLiveEdge, toggleFullscreen, videoEl y el
-    // registro de callbacks on('play'|'error'|'volume'|'time', cb). Los callbacks
-    // se registran UNA vez (wirePlayerEvents) y se disparan en cada create().
-    // MIME para enrutar la fuente en Video.js. Mira TODA la URL (no solo la
-    // extensión antes del `?`) y resuelve el `url=` interno de /proxy?url=...
-    // Ante la duda, HLS: un `type` erróneo provoca MEDIA_ERR_DECODE (CODE:3).
-    function ztSrcType(url) {
-        var u = (url || '').split('|')[0];
-        var pm = u.match(/[?&]url=([^&]+)/);
-        if (u.indexOf('/proxy?') !== -1 && pm) {
-            try { u = decodeURIComponent(pm[1]); } catch (e) { /* usa la URL tal cual */ }
-        }
-        var low = u.toLowerCase();
-        if (low.indexOf('.m3u8') !== -1) return 'application/x-mpegURL';
-        if (low.indexOf('.mpd') !== -1) return 'application/dash+xml';
-        if (/\.(mp4|m4v|mov)(\?|$)/.test(low)) return 'video/mp4';
-        if (/\.webm(\?|$)/.test(low)) return 'video/webm';
-        if (/\.(ogg|ogv)(\?|$)/.test(low)) return 'video/ogg';
-        return 'application/x-mpegURL';
-    }
-
-    // Safari: HLS nativo (como Clappr en iOS). Resto: motor MSE de Video.js (VHS),
-    // con nativeAudio/VideoTracks:false para evitar MEDIA_ERR_DECODE en IPTV.
-    var ZT_IS_SAFARI = /^((?!chrome|crios|android).)*safari/i.test(navigator.userAgent || '');
-    var ZT_VJS_HTML5 = {
-        vhs: { overrideNative: !ZT_IS_SAFARI },
-        nativeAudioTracks: ZT_IS_SAFARI,
-        nativeVideoTracks: ZT_IS_SAFARI,
     };
-
-    // ¿Dejar el HLS nativo del <video> en vez de hls.js? En Safari real sí: su
-    // HLS nativo es estable y es lo único que emite el VÍDEO por AirPlay (hls.js
-    // usa MSE → AirPlay solo lleva el audio). No basta con canPlayType: Chrome
-    // Android también responde "maybe" y su HLS nativo está roto.
-    function ztPreferNativeHls() {
-        if (!ZT_IS_SAFARI) return false;
-        try { return !!document.createElement('video').canPlayType('application/vnd.apple.mpegurl'); }
-        catch (e) { return false; }
-    }
-
-    // --- P2P (SwarmCloud) ---------------------------------------------------------
-    // Se engancha a la instancia de hls.js del motor (sin hls.js —iPhone, HLS
-    // nativo— no hay P2P). Solo en las fuentes de Flussonic: las de /proxy y /chp
-    // comparten URL entre canales distintos. El channelId por defecto del SDK es la
-    // URL sin protocolo ni query (host + ruta): solo se comparten segmentos entre
-    // espectadores del mismo stream EN EL MISMO CDN, que cortan igual los segmentos.
-    var ztP2pEngine = null, ztP2pHls = null;
-    // Totales del motor actual (KB, los da su evento 'stats') y lo ya enviado al
-    // panel; cada motor nuevo empieza de cero.
-    var ztP2pTot = null, ztP2pSent = null, ztP2pPeers = 0, ztP2pSid = null;
-
-    function ztP2pAttach(hls) {
-        if (!ZT_P2P || !hls || hls === ztP2pHls) return;
-        if (typeof P2pEngineHls === 'undefined') return; // no cargó el SDK (bloqueado, CDN caído)
-        ztP2pDetach();
-        ztP2pHls = hls; // aunque no aplique, para no repetir la comprobación
-        var url = currentStreamUrl();
-        if (!url || url.indexOf('/proxy') !== -1 || url.indexOf('/chp/') !== -1) return;
-        if (!P2pEngineHls.isSupported()) return;
-        try {
-            // Una sola sala por canal en todos los CDN normales: son copia m4f del
-            // CDN 1 y sirven los mismos segmentos (mismo nombre y bytes), así que
-            // se identifican por la ruta sin host ni token. El Premium (otra
-            // señal, FHD) va en su propia sala.
-            var ztP2pKey = function (u) {
-                var a = document.createElement('a');
-                a.href = u;
-                return (a.hostname.indexOf('premium') !== -1 ? 'premium' : 'cdn') + a.pathname;
-            };
-            // (el SDK solo acepta channelId propio con token; sin él, una sala por CDN).
-            var cfg = { hlsjsInstance: hls, live: true, trackerZone: 'eu', swAutoRegister: false, logLevel: 'none' };
-            if (ZT_P2P.token) {
-                cfg.token = ZT_P2P.token;
-                cfg.channelId = function (m3u8Url) { return ztP2pKey(m3u8Url); };
-                cfg.segmentId = function (streamId, sn, segmentUrl, range) { return ztP2pKey(segmentUrl) + (range ? '|' + range : ''); };
-            }
-            ztP2pEngine = new P2pEngineHls(cfg);
-            ztP2pTot = { http: 0, p2p: 0, up: 0 };
-            ztP2pSent = { http: 0, p2p: 0, up: 0 };
-            ztP2pPeers = 0;
-            ztP2pEngine.on('stats', function (st) {
-                if (!ztP2pTot || !st) return;
-                ztP2pTot.http = st.totalHTTPDownloaded || 0;
-                ztP2pTot.p2p = st.totalP2PDownloaded || 0;
-                ztP2pTot.up = st.totalP2PUploaded || 0;
-            });
-            ztP2pEngine.on('peers', function (peers) { ztP2pPeers = (peers && peers.length) || 0; });
-        } catch (e) { ztP2pEngine = null; }
-    }
-
-    // Cada 60 s, una muestra de sesiones (ZT_BEAT.sample: todas a la vez saturaban
-    // el VPS) manda en qué CDN está y cuántas veces se le ha parado el vídeo
-    // (panel → CDNs) y, con el motor P2P activo, lo recibido del CDN y por P2P
-    // (Ajustes → Reproductor → P2P). Solo con la pestaña visible.
-    var ZT_BEAT = {"url":"\/api\/player\/4\/p2p-stats","sample":0.1};
-    var ztBeatSampled = null;
-    var ztQoeSent = { stalls: 0, ms: 0, switches: 0 };
-    function ztBeat() {
-        if (!ZT_BEAT || !ZT_BEAT.url || document.visibilityState === 'hidden') return;
-        if (ztBeatSampled === null) ztBeatSampled = Math.random() < (ZT_BEAT.sample || 0);
-        if (!ztBeatSampled) return;
-        if (!ztP2pSid) {
-            try { ztP2pSid = sessionStorage.getItem('zt_p2p_sid'); } catch (e) { /* noop */ }
-            if (!ztP2pSid) {
-                ztP2pSid = Math.random().toString(36).slice(2) + Date.now().toString(36);
-                try { sessionStorage.setItem('zt_p2p_sid', ztP2pSid); } catch (e) { /* noop */ }
-            }
-        }
-        var body = { sid: ztP2pSid };
-        // Calidad: solo si el vídeo ha arrancado alguna vez (si no, no hay CDN que juzgar).
-        if (ztQoe.started) {
-            var stallMs = ztQoe.ms + (ztQoe.waitAt ? Date.now() - ztQoe.waitAt : 0);
-            body.cdn = servedLabel() || cdnLabel(ztSourceIdx);
-            body.stalls = Math.max(0, ztQoe.stalls - ztQoeSent.stalls);
-            body.stall_ms = Math.min(600000, Math.max(0, Math.round(stallMs - ztQoeSent.ms)));
-            body.switches = Math.max(0, ztQoe.switches - ztQoeSent.switches);
-            ztQoeSent = { stalls: ztQoe.stalls, ms: stallMs, switches: ztQoe.switches };
-        }
-        if (ztP2pEngine && ztP2pTot) {
-            ['http', 'p2p', 'up'].forEach(function (k) { body[k] = Math.max(0, Math.round(ztP2pTot[k] - ztP2pSent[k])); });
-            ztP2pSent = { http: ztP2pTot.http, p2p: ztP2pTot.p2p, up: ztP2pTot.up };
-            body.peers = ztP2pPeers;
-        }
-        if (!body.cdn && body.http === undefined) return;
-        try {
-            fetch(ZT_BEAT.url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                body: JSON.stringify(body),
-                keepalive: true,
-            }).catch(function () { /* noop */ });
-        } catch (e) { /* noop */ }
-    }
-    if (ZT_BEAT) setInterval(ztBeat, 60000);
-
-    // --- Calidad: paradas del vídeo ----------------------------------------------
-    // Se cuentan las paradas del <video> (vale para Clappr, Video.js y el HLS
-    // nativo) y se mandan en el latido (panel → CDNs). El player NO cambia de CDN
-    // por su cuenta: el espectador se queda en el que entró y cambia a mano.
-    var ztQoe = { started: false, stalls: 0, ms: 0, switches: 0, waitAt: 0 };
-
-    function ztQoeReset() {
-        if (ztQoe.waitAt) ztQoe.ms += Date.now() - ztQoe.waitAt;
-        ztQoe.waitAt = 0;
-    }
-
-    function ztQoeAttach(video) {
-        if (!video || video._ztQoe) return;
-        video._ztQoe = true;
-        video.addEventListener('playing', function () {
-            ztQoe.started = true;
-            if (ztQoe.waitAt) {
-                ztQoe.ms += Date.now() - ztQoe.waitAt;
-                ztQoe.waitAt = 0;
-            }
-        });
-        video.addEventListener('waiting', function () {
-            // Solo paradas en plena reproducción: no el arranque ni un salto manual.
-            if (!ztQoe.started || ztQoe.waitAt || video.paused || video.seeking) return;
-            ztQoe.waitAt = Date.now();
-            ztQoe.stalls++;
-        });
-    }
-
-    function ztP2pDetach() {
-        if (ztP2pEngine) ztBeat(); // lo pendiente del motor que se va
-        if (ztP2pEngine) { try { ztP2pEngine.destroy(); } catch (e) { /* noop */ } }
-        ztP2pTot = ztP2pSent = null;
-        ztP2pEngine = null;
-        ztP2pHls = null;
-    }
-
-    function makeCbs() {
-        var cbs = { play: [], error: [], volume: [], time: [] };
-        return {
-            on: function (name, cb) { if (cbs[name]) cbs[name].push(cb); },
-            fire: function (name, arg) { (cbs[name] || []).forEach(function (f) { try { f(arg); } catch (e) { /* noop */ } }); },
-        };
-    }
-
-    function makeClapprEngine() {
-        var player = null;
-        var bus = makeCbs();
-        return {
-            on: bus.on,
-            ready: function () { return typeof Clappr !== 'undefined'; },
-            raw: function () { return player; },
-            create: function (url) {
-                player = new Clappr.Player({
-                    source: url,
-                    parentId: '#player',
-                    width: '100%',
-                    height: '100%',
-                    autoPlay: true,
-                    playback: { playInline: true, hlsjsConfig: ztHlsConfig() },
-                    mediacontrol: { seekbar: '#e62222', buttons: '#fff' },
-                });
-                // P2P: Clappr crea su hls.js al reproducir y lo rehace al recuperarse
-                // de un error; ztP2pAttach no hace nada si es la misma instancia.
-                var syncP2p = function () {
-                    try { ztP2pAttach(player.core.getCurrentPlayback()._hls); } catch (e) { /* noop */ }
-                };
-                player.on(Clappr.Events.PLAYER_PLAY, function () { syncP2p(); bus.fire('play'); });
-                if (Clappr.Events && Clappr.Events.PLAYER_TIMEUPDATE) {
-                    player.on(Clappr.Events.PLAYER_TIMEUPDATE, function () { if (ZT_P2P) syncP2p(); bus.fire('time'); });
-                }
-                player.on(Clappr.Events.PLAYER_ERROR, function () { bus.fire('error'); });
-                if (Clappr.Events && Clappr.Events.PLAYER_VOLUMEUPDATE) {
-                    player.on(Clappr.Events.PLAYER_VOLUMEUPDATE, function (vol) { bus.fire('volume', Math.round(vol)); });
-                }
-            },
-            destroy: function () {
-                ztP2pDetach();
-                try {
-                    if (player && typeof player.destroy === 'function') {
-                        var pd = player.destroy();
-                        if (pd && typeof pd.catch === 'function') pd.catch(function () { /* noop */ });
-                    }
-                } catch (e) { /* noop */ }
-                player = null;
-            },
-            play: function () { try { if (player) player.play(); } catch (e) { /* noop */ } },
-            pause: function () { try { if (player) player.pause(); } catch (e) { /* noop */ } },
-            isPlaying: function () { try { return !!(player && player.isPlaying()); } catch (e) { return false; } },
-            getVolume: function () { try { return player ? player.getVolume() : 100; } catch (e) { return 100; } },
-            setVolume: function (v) { try { if (player) player.setVolume(v); } catch (e) { /* noop */ } },
-            getDuration: function () { try { return player ? player.getDuration() : NaN; } catch (e) { return NaN; } },
-            seek: function (t) { try { if (player) player.seek(t); } catch (e) { /* noop */ } },
-            isLive: function () {
-                try { return !!(player && player.core.activePlayback.getPlaybackType() === 'live'); } catch (e) { return false; }
-            },
-            toLiveEdge: function () {
-                try {
-                    var d = player ? player.getDuration() : NaN;
-                    if (isFinite(d) && d > 0) player.seek(Math.max(0, d - 1));
-                    if (player) player.play();
-                } catch (e) { /* noop */ }
-            },
-            toggleFullscreen: function () {
-                try { if (player && player.core && player.core.toggleFullscreen) player.core.toggleFullscreen(); } catch (e) { /* noop */ }
-            },
-            videoEl: function () { return document.querySelector('#player video'); },
-        };
-    }
-
-    // Enruta las fuentes HLS de Video.js por hls.js siempre que haya MSE (Chrome,
-    // Brave, Firefox, Android, iPad/macOS Safari): su transmuxer aguanta los
-    // streams IPTV que el HLS nativo / VHS rechazan. Sin MSE (iPhone) se deja el
-    // HLS nativo del <video>, que además es lo único que permite AirPlay del
-    // contenido. Se registra una sola vez, con prioridad sobre el handler nativo.
-    var ztHlsHandlerRegistered = false;
-    function registerHlsSourceHandler() {
-        if (ztHlsHandlerRegistered) return;
-        if (typeof videojs === 'undefined' || typeof Hls === 'undefined') return;
-        var Html5 = videojs.getTech && videojs.getTech('Html5');
-        if (!Html5 || !Html5.registerSourceHandler) return;
-        ztHlsHandlerRegistered = true;
-        Html5.registerSourceHandler({
-            canHandleSource: function (source) {
-                var type = (source.type || '').toLowerCase();
-                var isHls = type === 'application/x-mpegurl'
-                    || type === 'application/vnd.apple.mpegurl'
-                    || /\.m3u8(\?|$|\/)/i.test(source.src || '');
-                if (!isHls) return '';
-                // Safari real: HLS nativo. Es lo ÚNICO que emite el VÍDEO por
-                // AirPlay — con hls.js (MSE) AirPlay solo saca el audio y la tele
-                // se queda en negro. El resto de navegadores → hls.js.
-                if (ztPreferNativeHls()) return '';
-                if (!Hls.isSupported()) return ''; // iPhone y demás sin MSE → HLS nativo
-                return type.indexOf('mpegurl') !== -1 ? 'probably' : 'maybe';
-            },
-            handleSource: function (source, tech) {
-                var video = tech.el();
-                var vjsPlayer = tech.player && tech.player();
-                if (vjsPlayer) vjsPlayer.zt_hlsActive = true;
-                var hls = new Hls(Object.assign({ enableWorker: true, lowLatencyMode: false, backBufferLength: 90 }, ztHlsConfig()));
-                var hlsNetFails = 0, hlsMediaFails = 0;
-                hls.on(Hls.Events.ERROR, function (_evt, data) {
-                    if (!data.fatal) return;
-                    // Un par de reintentos internos; si no, se propaga el error al
-                    // reproductor para que la reconexión / salto de CDN de alrededor
-                    // (scheduleRetry) tome el control, igual que hace Clappr.
-                    if (data.type === Hls.ErrorTypes.NETWORK_ERROR && hlsNetFails++ < 1) {
-                        hls.startLoad();
-                    } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR && hlsMediaFails++ < 2) {
-                        hls.recoverMediaError();
-                    } else {
-                        try { (vjsPlayer || tech).error({ code: 2, message: 'HLS: ' + (data.details || data.type) }); }
-                        catch (e) { try { tech.error({ code: 2 }); } catch (e2) { /* noop */ } }
-                    }
-                });
-                ztP2pAttach(hls);
-                hls.loadSource(source.src);
-                hls.attachMedia(video);
-                return { dispose: function () {
-                    if (ztP2pHls === hls) ztP2pDetach();
-                    try { hls.destroy(); } catch (e) { /* noop */ }
-                    if (vjsPlayer) vjsPlayer.zt_hlsActive = false;
-                } };
-            },
-        }, 0);
-    }
-
-    // Botón de AirPlay en la barra de control de Video.js. Solo en WebKit
-    // (Safari/iOS) con destino disponible y SOLO si la reproducción es nativa: si
-    // el stream va por hls.js (MSE), AirPlay no puede emitir el contenido.
-    var ZT_AIRPLAY_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">'
-        + '<path d="M6 22h12l-6-6zM3 4h18a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1h-4v-2h4V6H3v9h4v2H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/></svg>';
-    function setupAirPlay(player) {
-        if (player.zt_hlsActive) return;
-        var tech = player.tech && player.tech({ IWillNotUseThisInPlugins: true });
-        var videoEl = tech && tech.el && tech.el();
-        if (!videoEl) return;
-        videoEl.setAttribute('x-webkit-airplay', 'allow');
-        if (!window.WebKitPlaybackTargetAvailabilityEvent || typeof videoEl.webkitShowPlaybackTargetPicker !== 'function') return;
-
-        if (!videojs.getComponent('ZtAirPlayButton')) {
-            var Button = videojs.getComponent('Button');
-            class ZtAirPlayButton extends Button {
-                constructor(p, options) {
-                    super(p, options);
-                    this.controlText('AirPlay');
-                    this.addClass('vjs-zt-airplay');
-                    var ph = this.el().querySelector('.vjs-icon-placeholder');
-                    if (ph) ph.innerHTML = ZT_AIRPLAY_SVG;
-                    this.hide();
-                    this._onAvail = (e) => { if (e.availability === 'available') this.show(); else this.hide(); };
-                    videoEl.addEventListener('webkitplaybacktargetavailabilitychanged', this._onAvail);
-                }
-                handleClick() {
-                    try { videoEl.webkitShowPlaybackTargetPicker(); } catch (e) { /* noop */ }
-                }
-                dispose() {
-                    videoEl.removeEventListener('webkitplaybacktargetavailabilitychanged', this._onAvail);
-                    super.dispose();
-                }
-            }
-            videojs.registerComponent('ZtAirPlayButton', ZtAirPlayButton);
-        }
-        var bar = player.getChild('controlBar');
-        if (bar && !bar.getChild('ZtAirPlayButton')) {
-            bar.addChild('ZtAirPlayButton', {}, Math.max(0, bar.children().length - 1));
-        }
-    }
-
-    function makeVideoJsEngine() {
-        var player = null;
-        var bus = makeCbs();
-        return {
-            on: bus.on,
-            ready: function () { return typeof videojs !== 'undefined'; },
-            raw: function () { return player; },
-            create: function (url) {
-                var host = document.getElementById('player');
-                if (!host) return;
-                registerHlsSourceHandler();
-                var v = document.createElement('video');
-                v.className = 'video-js vjs-default-skin';
-                v.setAttribute('playsinline', '');
-                v.style.width = '100%';
-                v.style.height = '100%';
-                host.appendChild(v);
-                player = videojs(v, {
-                    autoplay: true,
-                    controls: true,
-                    preload: 'auto',
-                    liveui: true,
-                    playsinline: true,
-                    errorDisplay: false, // usamos los overlays propios (#reconnecting, etc.)
-                    html5: ZT_VJS_HTML5,
-                    sources: [{ src: url, type: ztSrcType(url) }],
-                });
-                player.on('play', function () { bus.fire('play'); });
-                player.on('playing', function () { bus.fire('play'); });
-                player.on('timeupdate', function () { bus.fire('time'); });
-                player.on('durationchange', function () { bus.fire('time'); });
-                player.on('error', function () { bus.fire('error'); });
-                player.on('volumechange', function () {
-                    try { bus.fire('volume', Math.round(player.volume() * 100)); } catch (e) { /* noop */ }
-                });
-                player.ready(function () { try { setupAirPlay(player); } catch (e) { /* noop */ } });
-
-                // Vigilante de arranque/congelación: hls.js reintenta un servidor
-                // caído en silencio sin emitir 'error', así que si el tiempo no
-                // avanza ~10 s reproduciendo, se propaga un 'error' para que salte
-                // scheduleRetry (botón "Probar otro servidor" + salto de CDN).
-                var wdLast = -1, wdStalls = 0;
-                player._ztWatchdog = setInterval(function () {
-                    if (!player) return;
-                    var t = 0;
-                    try { t = player.currentTime() || 0; } catch (e) { return; }
-                    if (player.paused() || player.seeking()) { wdStalls = 0; wdLast = t; return; }
-                    if (t > wdLast + 0.05) { wdStalls = 0; wdLast = t; return; }
-                    wdLast = t;
-                    if (++wdStalls >= 5) { wdStalls = 0; bus.fire('error'); }
-                }, 2000);
-            },
-            destroy: function () {
-                try { clearInterval(player && player._ztWatchdog); } catch (e) { /* noop */ }
-                try { if (player && typeof player.dispose === 'function') player.dispose(); } catch (e) { /* noop */ }
-                player = null;
-            },
-            play: function () { try { if (player) { var p = player.play(); if (p && p.catch) p.catch(function () { /* noop */ }); } } catch (e) { /* noop */ } },
-            pause: function () { try { if (player) player.pause(); } catch (e) { /* noop */ } },
-            isPlaying: function () { try { return !!(player && !player.paused()); } catch (e) { return false; } },
-            getVolume: function () { try { return player ? Math.round(player.volume() * 100) : 100; } catch (e) { return 100; } },
-            setVolume: function (v) { try { if (player) player.volume(Math.min(1, Math.max(0, v / 100))); } catch (e) { /* noop */ } },
-            getDuration: function () { try { return player ? player.duration() : NaN; } catch (e) { return NaN; } },
-            seek: function (t) { try { if (player) player.currentTime(t); } catch (e) { /* noop */ } },
-            isLive: function () {
-                try {
-                    if (player && player.liveTracker && player.liveTracker.isLive) return !!player.liveTracker.isLive();
-                    return !!(player && !isFinite(player.duration()));
-                } catch (e) { return false; }
-            },
-            toLiveEdge: function () {
-                try {
-                    if (player && player.liveTracker && player.liveTracker.seekToLiveEdge) {
-                        player.liveTracker.seekToLiveEdge();
-                    } else if (player && player.seekable && player.seekable().length) {
-                        player.currentTime(player.seekable().end(player.seekable().length - 1));
-                    }
-                    if (player) { var p = player.play(); if (p && p.catch) p.catch(function () { /* noop */ }); }
-                } catch (e) { /* noop */ }
-            },
-            toggleFullscreen: function () {
-                try {
-                    if (!player) return;
-                    if (player.isFullscreen()) player.exitFullscreen(); else player.requestFullscreen();
-                } catch (e) { /* noop */ }
-            },
-            videoEl: function () { return document.querySelector('#player video'); },
-        };
-    }
-
-    var ztEngine = (ZT_ENGINE === 'videojs') ? makeVideoJsEngine() : makeClapprEngine();
-
-    // Botón de pantalla completa sin anuncio: el pop-under salta con cualquier
-    // clic, abría su pestaña y el navegador salía de pantalla completa al momento.
-    // Se escucha en la captura de window antes de que cargue la librería de
-    // anuncios (partials/ads va al final), así el clic no le llega, y la pantalla
-    // completa la pone el propio motor (en iPhone, la nativa del <video>).
-    (function () {
-        var SEL = '[data-fullscreen], .vjs-fullscreen-control';
-        function onButton(e) { return e.target && e.target.closest && e.target.closest(SEL); }
-        ['pointerdown', 'mousedown', 'touchstart', 'pointerup', 'mouseup', 'touchend'].forEach(function (type) {
-            window.addEventListener(type, function (e) { if (onButton(e)) e.stopImmediatePropagation(); }, true);
-        });
-        window.addEventListener('click', function (e) {
-            if (!onButton(e)) return;
-            e.stopImmediatePropagation();
+</script>
+<script>
+        document.addEventListener('contextmenu', function (e) {
             e.preventDefault();
-            ztEngine.toggleFullscreen();
-        }, true);
-    })();
-
-    function teardownPlayer() {
-        // El <video> nuevo arranca de cero: sus esperas de arranque no son paradas.
-        ztQoeReset();
-        ztQoe.started = false;
-        try { ztEngine.destroy(); } catch (e) { /* noop */ }
-        clearTimeout(ztConnectFallback);
-        var el = document.getElementById('player');
-        if (el) el.innerHTML = ''; // por si destroy() no limpió el contenedor
-    }
-
-    // Callbacks del player: se enganchan una sola vez; el adaptador los redispara
-    // en cada create() (reintentos, cambio de CDN).
-    var ztEventsWired = false;
-    function wirePlayerEvents() {
-        if (ztEventsWired) return;
-        ztEventsWired = true;
-        ztEngine.on('play', onPlaybackStarted);
-        ztEngine.on('time', onPlaybackStarted);
-        ztEngine.on('error', scheduleRetry);
-        ztEngine.on('volume', function (vol) {
-            try { localStorage.setItem(ZT_VOLUME_KEY, String(Math.round(vol))); } catch (e) { /* noop */ }
-        });
-    }
-
-    // Playback en marcha: quita el "Conectando…"/"Reconectando…" y resetea el
-    // estado de reintentos. Se dispara desde varios eventos (play, avance de
-    // tiempo, 'playing' del <video>) para no quedarse colgado.
-    function onPlaybackStarted() {
-        ztQoeAttach(ztEngine.videoEl());
-        // El evento de avance de tiempo dispara muy a menudo: si ya está todo
-        // limpio, salir.
-        var rec = document.getElementById('reconnecting');
-        if (ztRetries === 0 && ztSrcRetries === 0 && (!rec || rec.style.display === 'none')) return;
-        ztRetries = 0;
-        ztSrcRetries = 0;
-        clearTimeout(ztConnectFallback);
-        showReconnecting(false);
-        showOverlayMsg(null);
-        var rs = document.getElementById('retry-switch');
-        if (rs) rs.style.display = 'none';
-        var live = false;
-        try { live = ztEngine.isLive(); } catch (e) { /* noop */ }
-        var badge = document.getElementById('live-badge');
-        if (badge) badge.style.display = live ? 'inline-flex' : 'none';
-        var pip = document.getElementById('pip-btn');
-        var vid = ztEngine.videoEl();
-        if (pip) pip.style.display = (vid && document.pictureInPictureEnabled) ? 'inline-flex' : 'none';
-    }
-
-    // --- Fuentes tras Cloudflare Turnstile (solo tráfico anónimo) ---------------
-    // El widget se pinta al cargar (invisible) para que el token esté listo cuando
-    // se pulse play. Con él se piden las URLs firmadas y se rellenan en ZT_SOURCES
-    // por etiqueta, conservando el orden y el servidor elegido de la página.
-    var ztSourcesLoaded = false;
-    var ztSourcesLoading = false;
-    var ztTsWidget = null;
-    var ztTsToken = null;
-    var ztTsWaiter = null;
-    var ztTsInteractive = false; // Cloudflare está mostrando la casilla
-    var ztTsWaitStart = 0;       // cuándo empezó a esperar el espectador (pulsó play)
-    var ztTsRetried = false;
-    var ztSourcesAt = 0;         // cuándo se obtuvieron las URLs (el token del CDN dura 3 h)
-    var ztPageAt = Date.now();   // carga de la página (URLs del HTML: mismo límite de 3 h)
-
-    // Registro de lo que le pasa a Turnstile en este navegador (storage/logs/turnstile.log).
-    function ztTsLog(ev, code) {
-        if (!ZT_TS_LOG_URL) return;
-        // 'solved' es el caso normal (uno por reproducción): se registra 1 de cada 10
-        // para que el log no crezca con la audiencia. Los fallos, todos.
-        if (ev === 'solved' && Math.random() >= 0.1) return;
-        try {
-            // text/plain: sendBeacon con application/json a otro origen (zicotv.cc →
-            // bp.zicotv.cc) lo bloquean algunos navegadores; el servidor lee el cuerpo crudo.
-            navigator.sendBeacon(ZT_TS_LOG_URL, new Blob([JSON.stringify({
-                e: ev, c: code ? String(code).slice(0, 40) : null,
-                ms: ztTsWaitStart ? Date.now() - ztTsWaitStart : null,
-                w: !!ztTsWaiter,
-            })], { type: 'text/plain' }));
-        } catch (e) { /* noop */ }
-    }
-
-    function ztTsBox(show) {
-        var box = document.getElementById('zt-turnstile');
-        if (box) box.style.display = show ? 'block' : 'none';
-    }
-
-    // Mensaje mientras el espectador espera la verificación.
-    function ztTsWaitingMsg() {
-        if (!ztTsWaiter) return;
-        showOverlayMsg(ztTsInteractive ? zt('Marca la casilla de verificación para ver el directo') : zt('Verificando conexión…'));
-    }
-
-    function ztTurnstileLoaded() {
-        if (!ZT_SRC_GATE || !window.turnstile) return;
-        ztTsWidget = window.turnstile.render('#zt-turnstile', {
-            sitekey: ZT_SRC_GATE.siteKey,
-            action: 'player',
-            appearance: 'interaction-only',
-            callback: function (token) {
-                ztTsToken = token;
-                ztTsInteractive = false;
-                ztTsBox(false);
-                if (ztTsWaiter) {
-                    ztTsLog('solved');
-                    var w = ztTsWaiter; ztTsWaiter = null; ztTsToken = null; w(token);
-                }
-            },
-            'before-interactive-callback': function () {
-                ztTsInteractive = true;
-                ztTsBox(true);
-                ztTsLog('interactive');
-                ztTsWaitingMsg();
-            },
-            'after-interactive-callback': function () { ztTsInteractive = false; ztTsBox(false); ztTsWaitingMsg(); },
-            'expired-callback': function () { ztTsToken = null; },
-            // Turnstile reintenta solo; aquí solo se registra el código de error.
-            'error-callback': function (code) { ztTsLog('error', code); },
-        });
-    }
-    window.ztTurnstileLoaded = ztTurnstileLoaded;
-
-    function ztWithTurnstileToken(cb) {
-        if (ztTsToken) { var t = ztTsToken; ztTsToken = null; cb(t); return; }
-        ztTsWaiter = cb;
-        ztTsWaitStart = Date.now();
-        ztTsRetried = false;
-        ztTsWaitingMsg();
-        // Caducado o ya gastado: se pide otro.
-        if (window.turnstile && ztTsWidget !== null) {
-            try { window.turnstile.reset(ztTsWidget); } catch (e) { /* noop */ }
-        }
-        ztTsWatchdog(cb);
-    }
-
-    // Si tarda (y no es porque falte marcar la casilla), un reintento automático;
-    // si tampoco llega, aviso y se libera el estado para que play vuelva a intentarlo
-    // (antes se quedaba en "Verificando conexión…" para siempre).
-    function ztTsWatchdog(cb) {
-        setTimeout(function () {
-            if (ztTsWaiter !== cb) return;          // ya resuelto (o es otra espera)
-            if (ztTsInteractive) { ztTsWatchdog(cb); return; } // esperando la casilla
-            ztTsLog(window.turnstile ? 'timeout' : 'no_script');
-            if (!ztTsRetried && window.turnstile && ztTsWidget !== null) {
-                ztTsRetried = true;
-                try { window.turnstile.reset(ztTsWidget); } catch (e) { /* noop */ }
-                ztTsWatchdog(cb);
-            } else {
-                ztTsWaiter = null;
-                ztSourcesLoading = false;
-                showOverlayMsg(zt('No se ha podido verificar la conexión. Prueba otro navegador o desactiva extensiones que bloqueen Cloudflare.'));
-            }
-        }, 15000);
-    }
-
-    function ztEnsureSources(done) {
-        if (ztSourcesLoading) return;
-        ztSourcesLoading = true;
-        showOverlayMsg(zt('Conectando…'));
-        ztWithTurnstileToken(function (token) {
-            showOverlayMsg(zt('Conectando…'));
-            fetch(ZT_SRC_GATE.url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                body: JSON.stringify({ turnstile: token }),
-            })
-                .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-                .then(function (d) {
-                    ztApplySources(d.sources);
-                    ztSourcesLoaded = true;
-                    ztSourcesLoading = false;
-                    ztSourcesAt = Date.now();
-                    if (typeof buildCdnSwitch === 'function') buildCdnSwitch();
-                    done();
-                })
-                .catch(function (err) {
-                    ztSourcesLoading = false;
-                    ztTsLog('fetch_fail', err && err.message);
-                    showOverlayMsg(zt('No se ha podido verificar la conexión. Recarga la página.'));
-                });
-        });
-    }
-
-    // Rellena ZT_SOURCES con las URLs recibidas, por etiqueta, conservando el orden
-    // y el servidor elegido de la página.
-    function ztApplySources(list) {
-        // Página cacheada (vino sin enlaces, igual para todos 5 s): se adopta el
-        // orden de esta renovación, que sortea el CDN por peso para cada espectador.
-        // Conservar el de la página ponía a todos los de esos 5 s en el mismo CDN.
-        if (list && list.length && !ZT_SOURCES.some(function (s) { return s.url; })) {
-            ZT_SOURCES.length = 0;
-            list.forEach(function (s) { ZT_SOURCES.push(s); });
-            ztSourceIdx = 0;
-            for (var i = 0; i < ZT_SOURCES.length; i++) {
-                var c = ZT_SOURCES[i];
-                if (c.url && !c.locked && !c.off && !c.hidden) { ztSourceIdx = i; break; }
-            }
-            return;
-        }
-        var byLabel = {};
-        (list || []).forEach(function (s) { byLabel[s.label] = s; });
-        ZT_SOURCES.forEach(function (s) {
-            if (byLabel[s.label]) { s.url = byLabel[s.label].url; delete byLabel[s.label]; }
-        });
-        // CDNs nuevos desde que se cargó la página: al final.
-        Object.keys(byLabel).forEach(function (k) { ZT_SOURCES.push(byLabel[k]); });
-        if (!currentStreamUrl()) ztSourceIdx = Math.max(0, nextUsableSourceIdx());
-    }
-
-    // --- Token corto con renovación (ZT_RENEW) -----------------------------------
-    // Flussonic re-valida el token en cada petición: caducado = 403 aunque se esté
-    // viendo. hls.js cambia el token sobre la marcha (xhrSetup en ztHlsConfig); el
-    // HLS nativo de Safari no puede, así que a ese se le pide al cargar uno de 3 h.
-    // cuándo se emitió el token actual; 0 = la página vino sin enlaces (player
-    // cacheable): initPlayer los pide antes de reproducir.
-    var ztTokAt = (ZT_SOURCES && ZT_SOURCES[0] && ZT_SOURCES[0].url) ? Date.now() : 0;
-    var ztViewAsked = false;
-    var ztTokTtl = ZT_RENEW ? ZT_RENEW.ttl : 0;
-    var ztTokLong = false;                  // ya tiene el de 3 h (HLS nativo)
-    var ztRenewing = false;
-    var ztRenewCbs = [];
-    var ztRenewFailAt = 0;
-    var ztRenewStatus = 0;   // último código HTTP de la renovación
-    var ztRenewRetries = 0;  // reintentos seguidos sin enlaces (espera creciente)
-    var ztRenewForcedAt = 0;
-
-    function ztUsesNativeHls() {
-        if (ztPreferNativeHls()) return true;
-        return !(window.MediaSource && MediaSource.isTypeSupported
-            && MediaSource.isTypeSupported('video/mp4; codecs="avc1.42E01E,mp4a.40.2"'));
-    }
-
-    function ztTokenStale(frac) {
-        return !!ZT_RENEW && Date.now() - ztTokAt > ztTokTtl * 1000 * frac;
-    }
-
-    function ztFreshUrl(url) {
-        var m = /[?&]token=([^&#]*)/.exec(currentStreamUrl());
-        return m ? url.replace(/([?&]token=)[^&#]*/, '$1' + m[1]) : url;
-    }
-
-    function ztRenewTokens(done) {
-        if (done) ztRenewCbs.push(done);
-        if (ztRenewing || !ZT_RENEW) return;
-        ztRenewing = true;
-        var native = ztUsesNativeHls();
-        var body = { native: native };
-        // Player cacheable: la 1.ª renovación registra la visita (con la web que lo embebe).
-        if (ZT_RENEW.view && !ZT_PLAYED_URL && !ztViewAsked) {
-            body.view = true;
-            try { body.ref = document.referrer || ''; } catch (e) { /* noop */ }
-        }
-        // Token con límite de conexiones: los enlaces se dan a la sesión (sid) que
-        // tiene hueco en la cuenta; sin hueco llega over y ningún enlace.
-        if (ZT_RENEW.conn) { body.sid = ztSid(); body.src = true; }
-        fetch(ZT_RENEW.url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-            body: JSON.stringify(body),
-        })
-            .then(function (r) {
-                ztRenewStatus = r.status;
-                if (r.status === 403 && ZT_RENEW.conn) ztDropToken();
-                if (!r.ok) throw new Error('HTTP ' + r.status);
-                return r.json();
-            })
-            .then(function (d) {
-                if (ZT_RENEW.conn) {
-                    if (d.over) { showConnLimit(true); throw new Error('conn_limit'); }
-                    if (ztConnBlocked) showConnLimit(false, true);
-                }
-                if (body.view) ztViewAsked = true;
-                if (d.played && !ZT_PLAYED_URL) {
-                    ZT_PLAYED_URL = d.played;
-                    // Ya se pulsó play antes de tener la URL (player cacheable): se avisa ahora.
-                    if (ztStarted) ztSendPlayed();
-                }
-                ztRenewRetries = 0;
-                ztApplySources(d.sources);
-                ztTokAt = Date.now();
-                ztTokTtl = d.ttl || ztTokTtl;
-                ztTokLong = native;
-                if (typeof buildCdnSwitch === 'function') buildCdnSwitch();
-                return true;
-            })
-            .catch(function () { ztRenewFailAt = Date.now(); return false; })
-            .then(function (ok) {
-                ztRenewing = false;
-                var cbs = ztRenewCbs; ztRenewCbs = [];
-                cbs.forEach(function (f) { try { f(ok); } catch (e) { /* noop */ } });
-            });
-    }
-
-    if (ZT_RENEW) {
-        // Safari (HLS nativo): el de 3 h ya al cargar, para no retrasar el play.
-        if (ztUsesNativeHls()) ztRenewTokens();
-        // Mientras se ve, renovar a mitad de validez (sin cortar: ver xhrSetup).
-        setInterval(function () {
-            if (ztStarted && !ztTokLong && ztTokenStale(0.5)) ztRenewTokens();
-        }, 60000);
-        document.addEventListener('visibilitychange', function () {
-            if (!document.hidden && ztStarted && !ztTokLong && ztTokenStale(0.5)) ztRenewTokens();
-        });
-    }
-
-    function initPlayer() {
-        if (ZT_SRC_GATE && !ztSourcesLoaded) { ztEnsureSources(initPlayer); return; }
-        // Token a punto de caducar (página abierta un rato antes de dar al play),
-        // o Safari aún esperando el de 3 h: primero tokens nuevos.
-        if (ZT_RENEW && Date.now() - ztRenewFailAt > 30000
-            && (ztRenewing || (ztUsesNativeHls() ? !ztTokLong : ztTokenStale(0.5)))) {
-            showOverlayMsg(zt('Conectando…'));
-            ztRenewTokens(function () { initPlayer(); });
-            return;
-        }
-        // Sin enlaces todavía (la renovación falló): reintenta en vez de arrancar vacío.
-        if (ZT_RENEW && !currentStreamUrl()) {
-            // 403/404: bloqueado, canal retirado o enlace caducado; reintentar no sirve.
-            if (ztRenewStatus === 403 || ztRenewStatus === 404) {
-                showOverlayMsg(zt('No se ha podido cargar el canal. Recarga la página.'));
-                return;
-            }
-            // Cuenta llena: el latido avisa cuando se libera un hueco (showConnLimit).
-            if (ztConnBlocked) return;
-            // Resto (red, 429, 5xx en plena avalancha): 3, 6, 12, 24… hasta 60 s.
-            showOverlayMsg(zt('Conectando…'));
-            var wait = Math.min(60000, 3000 * Math.pow(2, ztRenewRetries++));
-            setTimeout(function () { ztRenewFailAt = 0; initPlayer(); }, wait);
-            return;
-        }
-        if (!ztEngine.ready()) { showOverlayMsg(zt('Conectando…')); setTimeout(initPlayer, 400); return; }
-        wirePlayerEvents();
-        teardownPlayer();
-        try {
-            ztEngine.create(currentStreamUrl());
-            if (cdnFeatureActive()) detectServingCdn();
-
-            // Arranque en frío: a los 3 s se avisa de que tarda (el aviso no tapa
-            // los controles: pointer-events none) y a los 25 s se quita igualmente
-            // por si el autoplay se bloqueó y hay que darle al play.
-            clearTimeout(ztConnectFallback);
-            ztConnectFallback = setTimeout(function () {
-                showOverlayMsg(zt('Iniciando el canal… puede tardar unos segundos'));
-                ztConnectFallback = setTimeout(function () { showOverlayMsg(null); }, 22000);
-            }, 3000);
-
-            // El <video> puede aparecer un instante después de crear el player;
-            // engancharle 'playing' cubre los casos en que el motor no emita su
-            // propio evento de arranque.
-            var wireVideo = setInterval(function () {
-                var vv = ztEngine.videoEl();
-                if (!vv) return;
-                clearInterval(wireVideo);
-                vv.addEventListener('playing', onPlaybackStarted, { once: true });
-            }, 150);
-            setTimeout(function () { clearInterval(wireVideo); }, 6000);
-
-            // Volumen recordado entre sesiones (misma clave que el player de la web).
-            try {
-                var v = parseInt(localStorage.getItem(ZT_VOLUME_KEY), 10);
-                if (!isNaN(v)) ztEngine.setVolume(v);
-            } catch (e) { /* noop */ }
-        } catch (e) { /* noop */ }
-    }
-
-    // --- Extras estilo DAZN: live badge, auto-reintento, volumen recordado, PiP ---
-    var ZT_VOLUME_KEY = 'zico-player-volume';
-    var ztRetries = 0;      // reintentos totales (tope global anti-bucle)
-    var ztSrcRetries = 0;   // reintentos en el CDN actual (salta al siguiente al llegar a 2)
-    var ztRetryTimer = null;
-    var ztConnectFallback = null; // quita "Conectando…" si el autoplay no arranca
-    var ztLastVolume = 100;
-
-    // Siguiente CDN utilizable (con url y no bloqueado), cíclico. -1 si no hay otro.
-    function nextUsableSourceIdx() {
-        if (!ZT_SOURCES || ZT_SOURCES.length < 2) return -1;
-        for (var k = 1; k < ZT_SOURCES.length; k++) {
-            var j = (ztSourceIdx + k) % ZT_SOURCES.length;
-            var s = ZT_SOURCES[j];
-            if (s && s.url && !s.locked && !s.off) return j;
-        }
-        return -1;
-    }
-
-    // Muestra/oculta el botón "Probar otro servidor" del overlay de reconexión.
-    function updateRetryActions() {
-        var btn = document.getElementById('retry-switch');
-        if (btn) btn.style.display = (nextUsableSourceIdx() !== -1) ? 'inline-flex' : 'none';
-    }
-
-    // Overlay de estado sobre el vídeo: "Conectando…" al arrancar (el primer
-    // segmento del directo puede tardar varios segundos y sin esto se ve negro
-    // mudo) y "Reconectando…" en los reintentos. null lo oculta.
-    function showOverlayMsg(msg) {
-        var el = document.getElementById('reconnecting');
-        if (!el) return;
-        if (msg) {
-            var m = el.querySelector('.msg');
-            if (m) m.textContent = msg;
-            el.style.display = 'flex';
-        } else {
-            el.style.display = 'none';
-        }
-    }
-
-    function showReconnecting(on) {
-        showOverlayMsg(on ? zt('Reconectando…') : null);
-    }
-
-    function goToLiveEdge() {
-        if (!ztEngine.raw()) return;
-        ztEngine.toLiveEdge();
-    }
-
-    function scheduleRetry() {
-        clearTimeout(ztConnectFallback); // que el aviso de arranque no pise el de reconexión
-        ztRetries++;
-        ztSrcRetries++;
-        showReconnecting(true);
-        updateRetryActions();
-
-        // Sin salto automático de CDN: se reintenta siempre en el mismo servidor
-        // (el espectador tiene el selector y «Probar otro servidor»). En Premium se
-        // avisa de que el arranque en frío tarda más.
-        if (isPremiumSource(ztSourceIdx) && ztSrcRetries < 5) showOverlayMsg(zt('Iniciando servidor premium…'));
-
-        // Tope global (≈ 3 intentos por servidor + margen, unos minutos): deja de reintentar
-        // pero mantiene el botón para que el usuario pueda probar a mano.
-        var hardCap = Math.max(9, 3 * ((ZT_SOURCES && ZT_SOURCES.length) || 1) + 2);
-        if (ztRetries >= hardCap) {
-            // Partido largo: el token de las URLs del CDN caduca a las 3 h y todos los
-            // servidores dan 403. Con el gate se pueden pedir URLs nuevas sin recargar.
-            if (ZT_SRC_GATE && ztSourcesLoaded && Date.now() - ztSourcesAt > 2 * 3600 * 1000) {
-                ztSourcesLoaded = false;
-                ztRetries = 0;
-                ztSrcRetries = 0;
-                initPlayer();
-                return;
-            }
-            // Token corto: puede que todo dé 403 porque caducó (pestaña congelada en
-            // segundo plano, Safari pasadas las 3 h…). Tokens nuevos y otra vuelta.
-            if (ZT_RENEW && Date.now() - ztRenewForcedAt > 60000) {
-                ztRenewForcedAt = Date.now();
-                ztRetries = 0;
-                ztSrcRetries = 0;
-                ztRenewTokens(function () { initPlayer(); });
-                return;
-            }
-            showOverlayMsg(Date.now() - ztPageAt > 2 * 3600 * 1000 ? zt('Se ha cortado la conexión. Recarga la página.') : zt('No se pudo conectar'));
-            return;
-        }
-
-        // Backoff 2s → 4s → 8s… (máx 15s): recupera cortes sin machacar el origen.
-        var delay = Math.min(2000 * Math.pow(2, ztSrcRetries - 1), 15000);
-        clearTimeout(ztRetryTimer);
-        ztRetryTimer = setTimeout(initPlayer, delay);
-    }
-
-    function togglePip() {
-        var video = document.querySelector('#player video');
-        if (!video) return;
-        if (document.pictureInPictureElement) {
-            document.exitPictureInPicture().catch(function () { /* noop */ });
-        } else if (video.requestPictureInPicture) {
-            video.requestPictureInPicture().catch(function () { /* noop */ });
-        }
-    }
-
-    // Atajos de teclado: espacio pausa, F fullscreen, M silenciar, flechas volumen.
-    // Todo va por el adaptador `ztEngine` (volumen 0–100 en ambos motores).
-    function onHotkey(e) {
-        if (!ztEngine.raw()) return;
-        try {
-            switch (e.key) {
-                case ' ':
-                    e.preventDefault();
-                    if (ztEngine.isPlaying()) ztEngine.pause(); else ztEngine.play();
-                    break;
-                case 'f': case 'F':
-                    ztEngine.toggleFullscreen();
-                    break;
-                case 'm': case 'M': {
-                    var vol = ztEngine.getVolume();
-                    if (vol > 0) { ztLastVolume = vol; ztEngine.setVolume(0); }
-                    else ztEngine.setVolume(ztLastVolume || 100);
-                    break;
-                }
-                case 'ArrowUp':
-                    e.preventDefault();
-                    ztEngine.setVolume(Math.min(100, ztEngine.getVolume() + 10));
-                    break;
-                case 'ArrowDown':
-                    e.preventDefault();
-                    ztEngine.setVolume(Math.max(0, ztEngine.getVolume() - 10));
-                    break;
-            }
-        } catch (e2) { /* noop */ }
-    }
-
-    // --- Beacon: marcar la carga como reproducida (contador de reproducciones) ---
-    var playReported = false;
-    var umamiPlayReported = false;
-    function reportPlay() {
-        if (!umamiPlayReported) {
-            umamiPlayReported = true;
-            // El script de Umami es defer: si aún no ha cargado (arranque directo), se reintenta.
-            (function track(tries) {
-                if (window.umami) { try { window.umami.track('reproducir', ZT_UMAMI); } catch (e) { /* noop */ } return; }
-                if (tries < 20) setTimeout(function () { track(tries + 1); }, 500);
-            })(0);
-        }
-        ztSendPlayed();
-    }
-    function ztSendPlayed() {
-        if (playReported || !ZT_PLAYED_URL) return;
-        playReported = true;
-        try { navigator.sendBeacon(ZT_PLAYED_URL); } catch (e) { /* noop */ }
-    }
-
-    // --- Límite de conexiones por token -------------------------------------
-    var ztConnBlocked = false;
-    function ztSid() {
-        try {
-            var k = 'zt_sid';
-            var v = localStorage.getItem(k);
-            if (!v) { v = (Date.now().toString(36) + Math.random().toString(36).slice(2, 10)); localStorage.setItem(k, v); }
-            return v;
-        } catch (e) {
-            if (!window.__ztSid) window.__ztSid = Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
-            return window.__ztSid;
-        }
-    }
-    // Arranque directo (sin overlay de anuncios) — tráfico con token/admin.
-    function ztStart() {
-        if (ztStarted) return;
-        reportPlay();
-        initPlayer();
-        ztStarted = true;
-    }
-    // quiet: solo quita el aviso (quien llama ya tiene los enlaces y arranca él).
-    function showConnLimit(on, quiet) {
-        var el = document.getElementById('conn-limit');
-        if (!el) return;
-        ztConnBlocked = on;
-        el.classList.toggle('show', on);
-        if (quiet) return;
-        if (on) {
-            try { ztEngine.pause(); } catch (e) { /* noop */ }
-        } else if (ZT_RENEW && ZT_RENEW.conn && ztStarted && (!currentStreamUrl() || ztTokenStale(1))) {
-            // Se quedó fuera sin enlaces (o caducaron esperando): ahora que hay hueco, a por ellos.
-            ztRenewFailAt = 0;
-            initPlayer();
-        } else if (ztStarted) {
-            try { ztEngine.play(); } catch (e) { /* noop */ }
-        } else {
-            // Se liberó un hueco y el player aún no había arrancado: arráncalo.
-            ztStart();
-        }
-    }
-    // El token ha dejado de valer (cuenta de prepago sin saldo, token desactivado…):
-    // se recarga el reproductor sin él, es decir, el normal con anuncios. Una vez.
-    function ztDropToken() {
-        try {
-            var u = new URL(window.location.href);
-            if (!u.searchParams.has('token') && !u.searchParams.has('st')) return;
-            u.searchParams.delete('token');
-            u.searchParams.delete('st');
-            window.location.replace(u.toString());
-        } catch (e) { /* noop */ }
-    }
-    // Con límite de conexiones (ZT_RENEW.conn) el latido va a la misma ruta firmada
-    // que da los enlaces; sin límite, a player.hb con el token (solo recuento).
-    function connHeartbeat() {
-        var gated = !!(ZT_RENEW && ZT_RENEW.conn);
-        if (!gated && (!ZT_CONN_HB_URL || !ZT_CONN_TOKEN)) return;
-        try {
-            fetch(gated ? ZT_RENEW.url : ZT_CONN_HB_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                body: JSON.stringify(gated ? { sid: ztSid() } : { token: ZT_CONN_TOKEN, sid: ztSid() }),
-            })
-                .then(function (r) {
-                    if (r.status === 403 && gated) ztDropToken();
-                    return r.ok ? r.json() : null;
-                })
-                .then(function (d) {
-                    if (!d) return;
-                    if (d.over && !ztConnBlocked) showConnLimit(true);
-                    else if (!d.over && ztConnBlocked) showConnLimit(false);
-                })
-                .catch(function () { /* noop */ });
-        } catch (e) { /* noop */ }
-    }
-    function startConnHeartbeat() {
-        var gated = !!(ZT_RENEW && ZT_RENEW.conn);
-        if (!gated && (!ZT_CONN_HB_URL || !ZT_CONN_TOKEN)) return;
-        // Con límite, el primer hueco lo pide la petición de enlaces al arrancar.
-        if (!gated) connHeartbeat();
-        setInterval(connHeartbeat, 25000);
-    }
-
-    // --- Selector de servidor (CDN): solo aparece si hay más de uno ---
-    function fmtViewers(n) {
-        if (n === null || n === undefined) return '…';
-        return zt('{n} viendo', { n: n.toLocaleString(ZT_INTL) });
-    }
-
-    // Espectadores animados: la lista se repinta entera en cada refresco, así que
-    // se recuerda el último número enseñado de cada sitio (key) y se cuenta desde
-    // él hasta el nuevo, con un +12 / −5 que sube y se va.
-    var ztShown = {}, ztRaf = {};
-    var ZT_REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    function ztCount(key, to) {
-        var el = document.createElement('span'); el.className = 'zt-num';
-        var from = ztShown[key];
-        ztShown[key] = to;
-        if (from === undefined || from === to || ZT_REDUCED) { el.textContent = to.toLocaleString(ZT_INTL); return el; }
-        var diff = to - from;
-        el.classList.add(diff > 0 ? 'up' : 'down');
-        var d = document.createElement('span'); d.className = 'zt-delta ' + (diff > 0 ? 'up' : 'down');
-        d.textContent = (diff > 0 ? '+' : '−') + Math.abs(diff).toLocaleString(ZT_INTL);
-        var txt = document.createTextNode(from.toLocaleString(ZT_INTL));
-        el.appendChild(txt); el.appendChild(d);
-        if (ztRaf[key]) cancelAnimationFrame(ztRaf[key]);
-        var start = performance.now();
-        (function step(now) {
-            var p = Math.min(1, (now - start) / 900), e = 1 - Math.pow(1 - p, 3);
-            txt.nodeValue = Math.round(from + diff * e).toLocaleString(ZT_INTL);
-            if (p < 1) ztRaf[key] = requestAnimationFrame(step);
-        })(start);
-        return el;
-    }
-    // "{n} viendo" con el número animado (el orden de las palabras depende del idioma).
-    function ztViewersText(key, n) {
-        var frag = document.createDocumentFragment();
-        if (n === null || n === undefined) { frag.appendChild(document.createTextNode('…')); return frag; }
-        var parts = zt('{n} viendo', { n: '\u0000' }).split('\u0000');
-        frag.appendChild(document.createTextNode(parts[0] || ''));
-        frag.appendChild(ztCount(key, n));
-        frag.appendChild(document.createTextNode(parts[1] || ''));
-        return frag;
-    }
-
-    function cdnFeatureActive() {
-        return ZT_SOURCES && ZT_SOURCES.length >= 2;
-    }
-
-    function applyCdnUi() {
-        var panel = document.getElementById('cdn-switch');
-        var toggle = document.getElementById('cdn-toggle');
-        if (!panel || !toggle) return;
-        if (!cdnFeatureActive() || ZT_APP) { panel.classList.remove('visible'); toggle.classList.remove('visible'); return; }
-        toggle.classList.add('visible');
-        toggle.classList.toggle('open', ztPanelOpen);
-        toggle.setAttribute('aria-expanded', ztPanelOpen ? 'true' : 'false');
-        panel.classList.toggle('visible', ztPanelOpen);
-    }
-
-    function setCdnOpen(open) {
-        ztPanelOpen = open;
-        applyCdnUi();
-    }
-
-    var CDN_CROWN = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 7.1-1.01L12 2z"/></svg>';
-    var CDN_EYE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
-
-    function cdnLabel(i) {
-        return (ZT_SOURCES[i] && ZT_SOURCES[i].label) || ('CDN ' + (i + 1));
-    }
-
-    // Orden de la lista: el Premium siempre el primero y luego por nombre (CDN 2,
-    // CDN 3… CDN 10). ZT_SOURCES conserva su orden (elegido + failover por peso):
-    // esto solo cambia cómo se enseña.
-    function cdnCompare(a, b) {
-        return (!!b.premium - !!a.premium)
-            || a.label.localeCompare(b.label, undefined, { numeric: true, sensitivity: 'base' });
-    }
-    function cdnOrder() {
-        return ZT_SOURCES.map(function (s, i) { return i; })
-            .sort(function (a, b) {
-                return cdnCompare({ label: cdnLabel(a), premium: ZT_SOURCES[a].premium }, { label: cdnLabel(b), premium: ZT_SOURCES[b].premium });
-            });
-    }
-
-    // Pastilla: punto (verde / dorado si es premium) + servidor en uso + espectadores.
-    function buildCdnToggle() {
-        var toggle = document.getElementById('cdn-toggle');
-        if (!toggle) return;
-        // Si Flussonic redirigió a otro nodo, la pastilla enseña el servidor REAL
-        // ("CDN 1 · desde Premium"), no el elegido.
-        var served = servedLabel();
-        var realSrc = served
-            ? (ztServedIdx !== -1 ? (ZT_SOURCES[ztServedIdx] || {}) : {})
-            : (ZT_SOURCES[ztSourceIdx] || {});
-        var label = served || cdnLabel(ztSourceIdx);
-        toggle.innerHTML = '';
-        var dot = document.createElement('span'); dot.className = 't-dot' + (realSrc.premium ? ' premium' : '');
-        var name = document.createElement('span'); name.textContent = label;
-        toggle.appendChild(dot); toggle.appendChild(name);
-        if (served) {
-            var via = document.createElement('span'); via.className = 't-sub';
-            via.textContent = zt('desde {server}', { server: cdnLabel(ztSourceIdx) });
-            toggle.appendChild(via);
-        }
-        var v = ztViewers[label];
-        if (v !== null && v !== undefined) {
-            var sub = document.createElement('span'); sub.className = 't-sub'; sub.innerHTML = CDN_EYE;
-            sub.appendChild(ztCount('pill:' + label, v));
-            toggle.appendChild(sub);
-        }
-        var chev = document.createElement('span');
-        chev.innerHTML = '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
-        toggle.appendChild(chev.firstChild);
-    }
-
-    function buildCdnSwitch() {
-        var box = document.getElementById('cdn-switch');
-        if (!box || !cdnFeatureActive()) return;
-        box.innerHTML = '';
-        buildCdnToggle();
-
-        var head = document.createElement('div');
-        head.className = 'cdn-head';
-        var t = document.createElement('span'); t.className = 'cdn-title'; t.textContent = zt('Servidor de vídeo');
-        var h = document.createElement('span'); h.className = 'cdn-hint'; h.textContent = zt('Si se corta o va a saltos, prueba otro.');
-        head.appendChild(t); head.appendChild(h);
-        box.appendChild(head);
-
-        var list = document.createElement('div'); list.className = 'cdn-list'; list.setAttribute('role', 'radiogroup');
-        box.appendChild(list);
-
-        cdnOrder().forEach(function (i) {
-            var src = ZT_SOURCES[i];
-            var active = (i === ztSourceIdx);
-            // Canal desactivado en ese CDN desde que se abrió la página, o respaldo
-            // oculto (el CDN origen): fuera, salvo que sea el que está sonando.
-            if ((src.off || src.hidden) && !active) return;
-            var locked = !!src.locked;
-            var label = cdnLabel(i);
-
-            var b = document.createElement('button');
-            b.type = 'button';
-            b.className = 'cdn-item' + (active ? ' active' : '') + (locked ? ' locked' : '') + (src.premium ? ' premium' : '');
-            b.setAttribute('role', 'radio');
-            b.setAttribute('aria-checked', active ? 'true' : 'false');
-
-            var radio = document.createElement('span'); radio.className = 'cdn-radio';
-
-            var body = document.createElement('span'); body.className = 'cdn-body';
-            var name = document.createElement('span'); name.className = 'cdn-name'; name.textContent = label;
-            var meta = document.createElement('span'); meta.className = 'cdn-meta';
-            if (locked) {
-                meta.textContent = zt('Exclusivo Premium');
-            } else {
-                meta.innerHTML = CDN_EYE;
-                var vt = document.createElement('span'); vt.appendChild(ztViewersText('list:' + label, ztViewers[label]));
-                meta.appendChild(vt);
-            }
-            body.appendChild(name); body.appendChild(meta);
-            if (!locked && active && servedLabel()) {
-                var sv = document.createElement('span'); sv.className = 'cdn-served';
-                sv.textContent = '↪ ' + zt('Ahora te sirve {server}', { server: servedLabel() });
-                sv.title = zt('Este servidor no tiene el canal en marcha y te pasa al que sí lo tiene.');
-                body.appendChild(sv);
-            }
-
-            b.appendChild(radio);
-            b.appendChild(body);
-
-            if (src.premium) {
-                var tp = document.createElement('span'); tp.className = 'cdn-tag';
-                tp.innerHTML = CDN_CROWN + 'Premium';
-                b.appendChild(tp);
-            }
-
-            list.appendChild(b);
-
-            if (locked) {
-                var note = document.createElement('div');
-                note.className = 'cdn-locked-note';
-                note.innerHTML = zt('Servidor exclusivo para usuarios Premium.') + ' '
-                    + '<a href="https://zicotv.cc/premium" target="_blank" rel="noopener">' + zt('Hazte Premium') + '</a>';
-                list.appendChild(note);
-                b.addEventListener('click', function () { note.classList.toggle('show'); });
-            } else {
-                b.addEventListener('click', function () { if (!active) { switchCdn(i); setCdnOpen(false); } });
-            }
         });
 
-        applyCdnUi();
-        postServersToParent();
-    }
-
-    // --- Puente con las apps (postMessage) ---------------------------------------
-    // El reproductor publica sus servidores (sin URLs) y acepta cambiar de servidor
-    // desde fuera: la TV lo hace con el mando (las teclas no entran en un iframe de
-    // otro origen) y el móvil con botones bajo el vídeo.
-    //   → parent: { type: 'zt:servers', active, served, servedIndex, servers: [{index,label,premium,locked,viewers}] }
-    //   ← parent: { type: 'zt:set-server', index } | { type: 'zt:get-servers' } | { type: 'zt:play' }
-    function postServersToParent() {
-        if (window.parent === window || !ZT_SOURCES) return;
-        try {
-            window.parent.postMessage({
-                type: 'zt:servers',
-                active: ztSourceIdx,
-                // Servidor real si Flussonic redirigió a otro nodo (null = el elegido).
-                served: servedLabel(),
-                servedIndex: (ztServedIdx !== -1 && ztServedIdx !== ztSourceIdx) ? ztServedIdx : null,
-                // Espectadores del canal sumando todos los servidores (null = aún no se sabe).
-                total: ztTotal,
-                servers: ZT_SOURCES.map(function (s, i) {
-                    var label = s.label || ('CDN ' + (i + 1));
-                    return { index: i, label: label, premium: !!s.premium, locked: !!s.locked, viewers: ztViewers[label] == null ? null : ztViewers[label] };
-                }).filter(function (s) { return !(ZT_SOURCES[s.index].off || ZT_SOURCES[s.index].hidden) || s.index === ztSourceIdx; })
-                  .sort(cdnCompare),
-            }, '*');
-        } catch (e) { /* noop */ }
-    }
-    window.addEventListener('message', function (ev) {
-        var d = ev && ev.data;
-        if (!d || typeof d !== 'object') return;
-        if (d.type === 'zt:set-server' && typeof d.index === 'number') switchCdn(d.index);
-        else if (d.type === 'zt:get-servers') postServersToParent();
-        else if (d.type === 'zt:play') { try { ztEngine.play(); } catch (e) { /* noop */ } }
-    });
-
-    // En las apps el mando no llega al play del reproductor (iframe de otro origen):
-    // si el vídeo se queda en pausa sin el aviso anti-adblock delante (corte de la
-    // señal, atasco del buffer), se vuelve a arrancar solo. Ahí nadie puede pausar a
-    // propósito, así que una pausa siempre es un atasco.
-    if (ZT_APP) {
-        setInterval(function () {
-            if (document.hidden || (typeof ztGateOn !== "undefined" && ztGateOn) || !ztEngine.raw()) return;
-            var v = ztEngine.videoEl();
-            if (v && v.paused && !v.ended) {
-                try { ztEngine.play(); } catch (e) { /* noop */ }
+        document.addEventListener('keydown', function (e) {
+            if ((e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'C'))) ||
+                (e.ctrlKey && e.shiftKey && e.key === 'J')) {
+                e.preventDefault();
             }
-        }, 3000);
-    }
-
-    function initCdnControls() {
-        if (!cdnFeatureActive()) return;
-        var toggle = document.getElementById('cdn-toggle');
-        var panel = document.getElementById('cdn-switch');
-        if (toggle) toggle.addEventListener('click', function (e) { e.stopPropagation(); setCdnOpen(!ztPanelOpen); });
-        // Se cierra al pulsar fuera o con Escape.
-        document.addEventListener('click', function (e) {
-            if (ztPanelOpen && panel && !panel.contains(e.target)) setCdnOpen(false);
         });
-        document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && ztPanelOpen) setCdnOpen(false); });
-        buildCdnSwitch();
-        applyCdnUi();
-    }
-
-    function switchCdn(i) {
-        if (i === ztSourceIdx || i < 0 || i >= ZT_SOURCES.length) return;
-        if (ZT_SOURCES[i] && (ZT_SOURCES[i].locked || (!ZT_SOURCES[i].url && !(ZT_SRC_GATE && !ztSourcesLoaded)))) return; // premium bloqueado
-        ztSourceIdx = i;
-        ztRetries = 0;
-        ztSrcRetries = 0;
-        ztServedIdx = -1;   // el servidor real se vuelve a comprobar en initPlayer
-        ztServedHost = null;
-        showOverlayMsg(zt('Conectando…'));
-        var rs = document.getElementById('retry-switch');
-        if (rs) rs.style.display = 'none';
-        buildCdnSwitch();   // refresca el botón activo
-        initPlayer();       // reinicia el player en el CDN elegido
-    }
-
-    // Espectadores por servidor: se consulta al cargar y se refresca cada 60s.
-    // Era cada 20 s y con ~860 espectadores en un canal salian 43 req/s solo de
-    // esto (el 41% del trafico del sitio). El numero es orientativo: 60 s sobra.
-    // Total del canal: la suma de todos los servidores (el mismo número que la web).
-    var ztTotal = null;
-    function renderTotalViewers(servers) {
-        var el = document.getElementById('total-viewers');
-        var known = servers.filter(function (s) { return s.viewers !== null && s.viewers !== undefined; });
-        if (!known.length) return;
-        ztTotal = known.reduce(function (a, s) { return a + s.viewers; }, 0);
-        if (!el) return;
-        el.innerHTML = CDN_EYE;
-        el.appendChild(ztViewersText('total', ztTotal));
-        el.classList.toggle('visible', ztTotal > 0);
-    }
-
-    // Espectadores al momento por WebSocket (eventsocket.com, protocolo Pusher, canal
-    // público "viewers"): sin librería, solo suscribirse y responder al ping. El
-    // servidor manda el estado completo cada vez que cambia (foto cada 10 s); si el
-    // WebSocket cae, se reconecta y mientras tanto sigue el polling de cdn-viewers.
-    var ztWsLast = 0;
-    function startViewersSocket() {
-        if (!ZT_VIEWERS_WS || !window.WebSocket) return;
-        var retry = 2000, ws;
-        function connect() {
-            try {
-                ws = new WebSocket('wss://' + ZT_VIEWERS_WS.host + '/app/' + ZT_VIEWERS_WS.key + '?protocol=7&client=js&version=8.4.0&flash=false');
-            } catch (e) { return; }
-            ws.onmessage = function (m) {
-                var msg; try { msg = JSON.parse(m.data); } catch (e) { return; }
-                if (msg.event === 'pusher:connection_established') {
-                    retry = 2000;
-                    ws.send(JSON.stringify({ event: 'pusher:subscribe', data: { channel: 'viewers' } }));
-                } else if (msg.event === 'pusher:ping') {
-                    ws.send(JSON.stringify({ event: 'pusher:pong', data: {} }));
-                } else if (msg.event === 'viewers.updated') {
-                    var d; try { d = typeof msg.data === 'string' ? JSON.parse(msg.data) : msg.data; } catch (e) { return; }
-                    var by = (d && d.s && d.s[ZT_VIEWERS_WS.channel]) || {};
-                    ztWsLast = Date.now();
-                    var servers = ZT_SOURCES.map(function (s, i) { var l = cdnLabel(i); return { label: l, viewers: by[l] || 0 }; });
-                    servers.forEach(function (s) { ztViewers[s.label] = s.viewers; });
-                    renderTotalViewers(servers);
-                    buildCdnSwitch();
-                    postServersToParent();
-                }
-            };
-            ws.onclose = function () {
-                setTimeout(connect, retry);
-                retry = Math.min(retry * 2, 60000);
-            };
-        }
-        connect();
-    }
-
-    function refreshCdnViewers() {
-        if (!ZT_CDN_VIEWERS_URL) return;
-        fetch(ZT_CDN_VIEWERS_URL, { headers: { 'Accept': 'application/json' } })
-            .then(function (r) { return r.ok ? r.json() : null; })
-            .then(function (d) {
-                if (!d || !d.servers) return;
-                // Con el WebSocket al día, sus números mandan (son más nuevos).
-                if (Date.now() - ztWsLast > 45000) {
-                    d.servers.forEach(function (s) { ztViewers[s.label] = s.viewers; });
-                    renderTotalViewers(d.servers);
-                }
-                // CDNs donde el canal ya no existe o se desactivó: se dejan de ofrecer
-                // (y vuelven si se reactiva) sin recargar la página.
-                if (Array.isArray(d.unavailable)) {
-                    ZT_SOURCES.forEach(function (src, i) { src.off = d.unavailable.indexOf(cdnLabel(i)) !== -1; });
-                    updateRetryActions();
-                }
-                buildCdnSwitch();
-                postServersToParent();
-            })
-            .catch(function () { /* noop */ });
-    }
-
-    // --- Detección anti-adblock ----------------------------------------------
-    // Solo cuenta si NUESTRA red de anuncios ha cargado (window.ztAdState, del
-    // partial popunder). Nada de cebos de Google ni de clases "ads": Brave y las
-    // VPN con filtro DNS los cortan siempre, aunque nuestro pop-under sí salga.
-    // 'pending' (PopAds aún probando) no bloquea; la revisión periódica lo pilla.
-    function adsBlocked() {
-        try {
-            return typeof window.ztAdState === 'function' && window.ztAdState() === 'blocked';
-        } catch (e) { return false; }
-    }
-
-    // Webs que nos meten en un iframe con sandbox sin allow-popups (v3.ppvtv.icu):
-    // el navegador no deja abrir el pop-under, así que ven el canal sin anuncios.
-    // No hay forma de leer los permisos del sandbox; se prueba enviar un
-    // formulario a un iframe oculto: con sandbox (sin allow-forms) el navegador
-    // lo bloquea y el iframe nunca carga. Solo dentro de un iframe de otra web.
-    var ztSandboxed = false;
-    function detectSandbox(onSandboxed) {
-        if (window.self === window.top) return;
-        try { if (window.top.location.host === location.host) return; } catch (e) { /* otra web */ }
-        var name = 'zt-sbx-' + Math.random().toString(36).slice(2);
-        var frame = document.createElement('iframe');
-        frame.name = name;
-        frame.style.display = 'none';
-        document.body.appendChild(frame);
-        var loaded = false;
-        setTimeout(function () {
-            frame.addEventListener('load', function () { loaded = true; });
-            var form = document.createElement('form');
-            form.method = 'GET';
-            form.action = '/robots.txt';
-            form.target = name;
-            form.style.display = 'none';
-            document.body.appendChild(form);
-            try { form.submit(); } catch (e) { /* bloqueado */ }
-            setTimeout(function () {
-                frame.remove();
-                form.remove();
-                if (!loaded) onSandboxed();
-            }, 3000);
-        }, 50);
-    }
-
-    // Puerta anti-adblock: muestra el aviso y detiene la reproducción mientras
-    // haya bloqueador; la retira (y reanuda) en cuanto se desactiva.
-    function pausePlayback() {
-        try { ztEngine.pause(); } catch (e) { /* noop */ }
-    }
-    function resumePlayback() {
-        try { ztEngine.play(); } catch (e) { /* noop */ }
-    }
-    var ztGateOn = false;
-    function setAdblockGate(on) {
-        if (on === ztGateOn) return; // solo actuar en los cambios de estado
-        var overlay = document.getElementById('play-overlay');
-        if (!overlay) return;
-        ztGateOn = on;
-        if (on) {
-            overlay.className = 'adblock';
-            overlay.style.display = 'flex';
-            if (ztStarted) pausePlayback();
-        } else {
-            overlay.className = '';
-            if (ztStarted) { overlay.style.display = 'none'; resumePlayback(); }
-        }
-    }
-    function enforceAdblockGate() {
-        if (!ZT_BLOCK_ADBLOCK) return;
-        if (adsBlocked()) setAdblockGate(true);
-        else if (ztStarted) setAdblockGate(false);
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        // Canal premium visto por un no-premium: aviso y no se arranca nada.
-        if (ZT_PREMIUM_GATE) {
-            var pg = document.getElementById('premium-gate');
-            if (pg) pg.classList.add('show');
-            return;
-        }
-        // App bloqueada en Anti-piratería: solo la pantalla con el mensaje.
-        if (ZT_APP_GATE) return;
-
-        initCdnControls();
-        postServersToParent();
-        refreshCdnViewers();
-        // Los números llegan por WebSocket; el polling queda de respaldo (y para saber
-        // en qué CDN ya no está el canal) cada 60 s.
-        startViewersSocket();
-        setInterval(refreshCdnViewers, 60000);
-        startConnHeartbeat();
-
-        // Ya al tope de conexiones al cargar: mostramos el aviso y no arrancamos.
-        if (ZT_CONN_LIMIT) {
-            showConnLimit(true);
-            return;
-        }
-        // Revisa el bloqueador al arrancar y de forma continua (también en directo).
-        setTimeout(enforceAdblockGate, 1500);
-        setInterval(enforceAdblockGate, 7000);
-
-        document.addEventListener('keydown', onHotkey);
-        var liveBadge = document.getElementById('live-badge');
-        if (liveBadge) liveBadge.addEventListener('click', goToLiveEdge);
-        var pipBtn = document.getElementById('pip-btn');
-        if (pipBtn) pipBtn.addEventListener('click', togglePip);
-        var retrySwitch = document.getElementById('retry-switch');
-        if (retrySwitch) retrySwitch.addEventListener('click', function () {
-            var alt = nextUsableSourceIdx();
-            if (alt !== -1) switchCdn(alt);
-        });
-        // Doble clic = pantalla completa del contenedor.
-        var playerEl = document.getElementById('player');
-        if (playerEl) playerEl.addEventListener('dblclick', function () {
-            try {
-                if (document.fullscreenElement) document.exitFullscreen();
-                else playerEl.requestFullscreen();
-            } catch (e) { /* noop */ }
-        });
-
-        var overlay = document.getElementById('play-overlay');
-        if (overlay) {
-            detectSandbox(function () {
-                ztSandboxed = true;
-                overlay.className = 'sandboxed';
-                overlay.style.display = 'flex';
-                if (ztStarted) pausePlayback();
-            });
-            // Con anuncios: el gesto de click dispara el popunder y arranca el player.
-            overlay.addEventListener('click', function () {
-                if (ztSandboxed) return;
-                // Con anti-adblock activo, no se arranca mientras haya bloqueador.
-                if (ZT_BLOCK_ADBLOCK && adsBlocked()) { setAdblockGate(true); return; }
-                // Ya había arrancado (puerta anti-adblock a mitad): solo reanuda.
-                if (ztStarted) { setAdblockGate(false); return; }
-                if (adsBlocked()) { overlay.className = 'adblock'; return; }
-                // Directlinks antes de reproducir: cada clic abre uno hasta agotarlos.
-                if (ztPlayDlLeft > 0 && ZT_DL_URL) {
-                    ztPlayDlLeft--;
-                    try { window.open(ZT_DL_URL, '_blank'); } catch (e) { /* noop */ }
-                    overlay.className = 'dl';
-                    overlay.querySelector('.dl-hint').textContent = ztPlayDlLeft > 0
-                        ? zt('Pulsa otra vez para ver el directo ({n} más)', { n: ztPlayDlLeft })
-                        : zt('Pulsa otra vez para ver el directo');
-                    return;
-                }
-                overlay.className = '';
-                overlay.style.display = 'none';
-                // Dentro de una app de terceros: anuncio de vídeo antes del canal (como
-                // mucho uno cada rato). Sin anuncio, tarde o con fallo, arranca igual.
-                if (ZT_VAST && !ztVastRun && window.ztRunPreroll && window.ztVastDue && window.ztVastDue()) {
-                    ztVastRun = true;
-                    window.ztRunPreroll(function () { ztStart(); });
-                    return;
-                }
-                ztStart();
-            });
-        } else {
-            // Sin anuncios (token/admin): arranca directo.
-            ztStart();
-        }
-    });
-</script>
-
-
-<script type="text/javascript" data-cfasync="false">window.ztAdState = function () { return 'ok'; };</script>
-
-
-
-<script id="aclib" type="text/javascript" src="/gwznroh.js"></script>
+    </script>
+<script src="https://roxiestreams.info/js/bootstrap.bundle.min.js"></script>
 <script type="text/javascript">
-    // Script síncrono: si aquí no hay aclib, el bloqueador lo ha cortado.
-    window.ztAdState = function () { return window.aclib ? 'ok' : 'blocked'; };
-    if (window.aclib) {
-        aclib.runPop({
-            zoneId: "12333358",
-        });
-    }
-</script>
-
-
-<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"bdc0be14a07a40dfb657eab45eda5f43","spa":2}' crossorigin="anonymous"></script>
+aclib.runPop({
+zoneId: '10754426',
+});
+</script><script src="https://roxiestreams.info/js/viewers.js" defer></script>
 </body>
 </html>
