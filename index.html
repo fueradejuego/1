@@ -1,1524 +1,630 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Reproductor · todo en uno</title>
+<meta charset="UTF-8">
+<title>Real Sociedad B vs Real Sporting — VerCuevana</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="/public.css?v=15">
 
-  <!-- =====================================================================
-       ESTILOS  (css/player.css + estilos de la página)
-       ===================================================================== -->
-  <style>
-    /* ---------- Estilos base de la librería VP ---------- */
-    .vp-player {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      background: #000;
-      overflow: hidden;
-      border-radius: 12px;
-      isolation: isolate;
-    }
-
-    /* Cualquier nodo raíz que inyecte un motor ocupa todo el contenedor. */
-    .vp-player > video,
-    .vp-player > .vp-video,
-    .vp-player > iframe.vp-iframe,
-    .vp-player > .vp-clappr,
-    .vp-player > .vp-placeholder,
-    .vp-player > div {
-      width: 100%;
-      height: 100%;
-      display: block;
-      border: 0;
-      background: #000;
-    }
-
-    .vp-player iframe.vp-iframe {
-      position: absolute;
-      inset: 0;
-    }
-
-    /* ---------- overlay de estado (cargando / error) ---------- */
-    .vp-overlay {
-      position: absolute;
-      inset: 0;
-      z-index: 10;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      padding: 16px;
-      text-align: center;
-      color: #fff;
-      font: 500 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-      background: rgba(0, 0, 0, 0.55);
-      pointer-events: none;
-    }
-
-    .vp-player[data-vp-status="error"] .vp-overlay {
-      pointer-events: auto;
-      background: rgba(12, 2, 3, 0.85);
-    }
-
-    .vp-spinner {
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      border: 3px solid rgba(255, 255, 255, 0.25);
-      border-top-color: #fff;
-      animation: vp-spin 0.8s linear infinite;
-    }
-
-    @keyframes vp-spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .vp-status-text {
-      opacity: 0.85;
-    }
-
-    .vp-error {
-      max-width: 420px;
-      padding: 14px 18px;
-      border-radius: 10px;
-      background: #3a1113;
-      border: 1px solid #7a2226;
-      color: #ffd9db;
-      font-weight: 500;
-    }
-
-    /* ---------- placeholder (click to play) ---------- */
-    .vp-placeholder {
-      position: absolute;
-      inset: 0;
-      display: block;
-      padding: 0;
-      border: 0;
-      margin: 0;
-      cursor: pointer;
-      background: #000;
-      color: inherit;
-    }
-
-    .vp-placeholder img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      opacity: 0.82;
-      transition: opacity 0.2s ease;
-    }
-
-    .vp-placeholder:hover img {
-      opacity: 0.95;
-    }
-
-    .vp-placeholder .vp-play {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 78px;
-      height: 78px;
-      border: 0;
-      border-radius: 50%;
-      cursor: pointer;
-      background: rgba(0, 0, 0, 0.62);
-      backdrop-filter: blur(2px);
-      display: grid;
-      place-items: center;
-      transition: transform 0.15s ease, background 0.15s ease;
-    }
-
-    .vp-placeholder .vp-play::after {
-      content: "";
-      display: block;
-      margin-left: 6px;
-      border-style: solid;
-      border-width: 16px 0 16px 26px;
-      border-color: transparent transparent transparent #fff;
-    }
-
-    .vp-placeholder:hover .vp-play,
-    .vp-placeholder:focus-visible .vp-play {
-      transform: translate(-50%, -50%) scale(1.08);
-      background: rgba(229, 9, 20, 0.92);
-    }
-
-    .vp-placeholder:focus-visible {
-      outline: 2px solid #fff;
-      outline-offset: -4px;
-    }
-
-    .vp-placeholder .vp-ph-title {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      padding: 26px 16px 14px;
-      text-align: left;
-      color: #fff;
-      font: 600 16px/1.3 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-      background: linear-gradient(transparent, rgba(0, 0, 0, 0.82));
-    }
-
-    /* ---------- Página: pantalla completa + barra superior ---------- */
-    html, body {
-      margin: 0;
-      height: 100%;
-      background: #000;
-      overflow: hidden;
-    }
-
-    /* El reproductor llena la pantalla (anula 16:9 y border-radius) */
-    #player.vp-player {
-      position: fixed;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      aspect-ratio: auto;
-      border-radius: 0;
-    }
-
-    /* Barra superior (FUERA de #player: VP.create() vacía el contenedor) */
-    #ui {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 20;
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 8px;
-      padding: 10px 14px;
-      font: 500 13px/1.3 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-      color: #fff;
-      background: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0));
-      pointer-events: none;
-    }
-
-    #ui .title { font-weight: 700; }
-
-    #ui .group { display: flex; flex-wrap: wrap; gap: 6px; pointer-events: auto; }
-
-    #ui button.pill {
-      padding: 5px 11px;
-      border: 1px solid rgba(255, 255, 255, 0.28);
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.08);
-      color: #fff;
-      font: inherit;
-      cursor: pointer;
-      transition: background 0.15s ease, border-color 0.15s ease;
-    }
-    #ui button.pill:hover:not(:disabled) { background: rgba(255, 255, 255, 0.18); }
-    #ui button.pill[aria-pressed="true"] { background: #e50914; border-color: #e50914; }
-    #ui button.pill:disabled { opacity: 0.4; cursor: not-allowed; }
-
-    #ui .status { margin-left: auto; opacity: 0.75; pointer-events: none; }
-  </style>
 </head>
 <body>
-  <!-- Contenedor del reproductor -->
-  <div id="player"></div>
 
-  <!-- Barra: modo (iframe/parse), selector de CDN y estado -->
-  <div id="ui">
-    <span class="title" id="ui-title">Reproductor</span>
-
-    <span class="group" id="ui-modes">
-      <button type="button" class="pill" id="mode-iframe">iframe</button>
-      <button type="button" class="pill" id="mode-parse">parse</button>
-    </span>
-
-    <span class="group" id="ui-cdns"></span>
-
-    <span class="status" id="ui-status"></span>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="/" class="brand"><span class="mark">▶</span><span class="name">Ver<em>Cuevana</em></span></a>
+    <div class="topbar-spacer"></div>
+    <a class="topbar-nav" href="/install.php" style="padding:8px 14px;color:var(--fg-mute);font-size:13px;font-weight:500;border-radius:6px">Instalar</a>
   </div>
-
-  <!-- =====================================================================
-       LIBRERÍA VP  (js/core/*  +  js/players/*)
-       ===================================================================== -->
-  <script>
-  /* ------------------------------------------------------------------ *
-   *  loader.js — carga (una sola vez) las librerías externas desde CDN
-   * ------------------------------------------------------------------ */
-  (function (global) {
-    'use strict';
-    var VP = (global.VP = global.VP || {});
-
-    VP.libs = {
-      shaka: {
-        globals: ['shaka'],
-        scripts: [
-          'https://cdn.jsdelivr.net/npm/shaka-player@5.3.5/dist/shaka-player.compiled.js',
-          'https://ajax.googleapis.com/ajax/libs/shaka-player/4.16.4/shaka-player.compiled.js',
-          'https://cdnjs.cloudflare.com/ajax/libs/shaka-player/5.3.5/shaka-player.compiled.js'
-        ]
-      },
-      clappr: {
-        globals: ['Clappr'],
-        scripts: [
-          'https://cdn.jsdelivr.net/npm/@clappr/player@0.14.10/dist/clappr.min.js',
-          'https://cdn.jsdelivr.net/npm/clappr@0.10.0/dist/clappr.min.js'
-        ]
-      },
-      openplayer: {
-        globals: ['OpenPlayerJS', 'OpenPlayer'],
-        styles: [
-          'https://cdn.jsdelivr.net/npm/@openplayerjs/player@3.6.5/dist/openplayer.css'
-        ],
-        scripts: [
-          'https://cdn.jsdelivr.net/npm/@openplayerjs/player@3.6.5/dist/openplayer.js',
-          'https://cdn.jsdelivr.net/npm/openplayerjs@2.14.12/dist/openplayer.min.js'
-        ]
-      },
-      openplayerHls: {
-        globals: null,
-        scripts: [
-          'https://cdn.jsdelivr.net/npm/@openplayerjs/hls@3.6.4/dist/openplayer-hls.js',
-          'https://cdn.jsdelivr.net/npm/openplayerjs-hls@latest/dist/openplayer-hls.min.js'
-        ]
-      }
-    };
-
-    var _libPromises = {};
-    var _styles = {};
-
-    function hasGlobal(names) {
-      if (!names || !names.length) return false;
-      for (var i = 0; i < names.length; i++) {
-        if (global[names[i]]) return true;
-      }
-      return false;
-    }
-
-    function injectStyle(href) {
-      if (_styles[href]) return _styles[href];
-      _styles[href] = new Promise(function (resolve) {
-        var link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = href;
-        link.onload = function () { resolve(true); };
-        link.onerror = function () { resolve(false); };
-        document.head.appendChild(link);
-      });
-      return _styles[href];
-    }
-
-    function injectScript(src) {
-      return new Promise(function (resolve, reject) {
-        var s = document.createElement('script');
-        s.src = src;
-        s.async = true;
-        s.onload = function () { resolve(src); };
-        s.onerror = function () { reject(new Error('No se pudo cargar el script: ' + src)); };
-        document.head.appendChild(s);
-      });
-    }
-
-    VP.loadLib = function (name) {
-      var def = VP.libs[name];
-      if (!def) return Promise.reject(new Error('Librería desconocida: ' + name));
-      if (def.globals && hasGlobal(def.globals)) return Promise.resolve(true);
-      if (_libPromises[name]) return _libPromises[name];
-
-      var task = Promise.all((def.styles || []).map(injectStyle)).then(function () {
-        var urls = def.scripts || [];
-        var lastError = null;
-
-        function attempt(i) {
-          if (i >= urls.length) {
-            return Promise.reject(lastError || new Error('No hay fuentes disponibles para ' + name));
-          }
-          return injectScript(urls[i]).then(function () {
-            if (!def.globals || hasGlobal(def.globals)) return true;
-            lastError = new Error('El script cargó pero no expone: ' + def.globals.join(' / '));
-            return attempt(i + 1);
-          }, function (err) {
-            lastError = err;
-            return attempt(i + 1);
-          });
-        }
-        return attempt(0);
-      });
-
-      _libPromises[name] = task['catch'](function (err) {
-        delete _libPromises[name];
-        throw err;
-      });
-      return _libPromises[name];
-    };
-  })(window);
-
-  /* ------------------------------------------------------------------ *
-   *  base.js — utilidades comunes y clase base de todos los motores
-   * ------------------------------------------------------------------ */
-  (function (global) {
-    'use strict';
-    var VP = (global.VP = global.VP || {});
-
-    VP.uid = function (prefix) {
-      return (prefix || 'vp') + '-' + Math.random().toString(36).slice(2, 9);
-    };
-
-    VP.isHls = function (url) { return /\.m3u8(\?|#|$)/i.test(String(url || '')); };
-    VP.isDash = function (url) { return /\.mpd(\?|#|$)/i.test(String(url || '')); };
-
-    VP.guessMime = function (url) {
-      url = String(url || '');
-      if (VP.isHls(url)) return 'application/x-mpegURL';
-      if (VP.isDash(url)) return 'application/dash+xml';
-      if (/\.webm(\?|#|$)/i.test(url)) return 'video/webm';
-      if (/\.(ogv|ogg)(\?|#|$)/i.test(url)) return 'video/ogg';
-      if (/\.(mp4|m4v|mov)(\?|#|$)/i.test(url)) return 'video/mp4';
-      return 'video/mp4';
-    };
-
-    VP.toEmbedUrl = function (url) {
-      if (!url) return url;
-      var u = String(url).trim();
-      var m;
-
-      m = u.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|v\/)|youtu\.be\/)([\w-]{11})/i);
-      if (m) {
-        var start = u.match(/[?&](?:t|start)=(\d+)/i);
-        return 'https://www.youtube.com/embed/' + m[1] + '?rel=0' + (start ? '&start=' + start[1] : '');
-      }
-      m = u.match(/vimeo\.com\/(?:video\/)?(\d+)/i);
-      if (m) return 'https://player.vimeo.com/video/' + m[1];
-      m = u.match(/dailymotion\.com\/video\/([a-z0-9]+)/i);
-      if (m) return 'https://www.dailymotion.com/embed/video/' + m[1];
-      m = u.match(/drive\.google\.com\/file\/d\/([\w-]+)/i);
-      if (m) return 'https://drive.google.com/file/d/' + m[1] + '/preview';
-      m = u.match(/streamable\.com\/([a-z0-9]+)/i);
-      if (m) return 'https://streamable.com/e/' + m[1];
-
-      return u;
-    };
-
-    VP.isEmbeddable = function (url) {
-      return VP.toEmbedUrl(url) !== String(url || '').trim();
-    };
-
-    VP.BasePlayer = function (container, config) {
-      this.container = container;
-      this.config = config || {};
-      this.el = null;
-      this.player = null;
-      this.engineName = null;
-      this._destroyed = false;
-    };
-
-    VP.BasePlayer.prototype = {
-      constructor: VP.BasePlayer,
-
-      mount: function () {
-        return Promise.reject(new Error('mount() no implementado'));
-      },
-
-      destroy: function () {
-        if (this._destroyed) return;
-        this._destroyed = true;
-        if (typeof this.onDestroy === 'function') {
-          try { this.onDestroy(); } catch (e) { /* noop */ }
-        }
-        if (this.el && this.el.parentNode) this.el.parentNode.removeChild(this.el);
-        this.el = null;
-        this.player = null;
-        this.clearStatus();
-      },
-
-      emit: function (name, detail) {
-        this.container.dispatchEvent(new CustomEvent('vp:' + name, {
-          detail: detail || {},
-          bubbles: true
-        }));
-      },
-
-      status: function (text, kind) {
-        this.container.setAttribute('data-vp-status', kind || 'loading');
-        var overlay = this.container.querySelector(':scope > .vp-overlay');
-        if (!overlay) {
-          overlay = document.createElement('div');
-          overlay.className = 'vp-overlay';
-          this.container.appendChild(overlay);
-        }
-        overlay.innerHTML = '';
-        if (kind === 'error') {
-          var box = document.createElement('div');
-          box.className = 'vp-error';
-          box.textContent = text || 'No se pudo cargar el reproductor.';
-          overlay.appendChild(box);
-        } else {
-          var spin = document.createElement('div');
-          spin.className = 'vp-spinner';
-          overlay.appendChild(spin);
-          if (text) {
-            var t = document.createElement('div');
-            t.className = 'vp-status-text';
-            t.textContent = text;
-            overlay.appendChild(t);
-          }
-        }
-      },
-
-      clearStatus: function () {
-        this.container.removeAttribute('data-vp-status');
-        var overlay = this.container.querySelector(':scope > .vp-overlay');
-        if (overlay) overlay.remove();
-      },
-
-      fail: function (err) {
-        var msg = typeof err === 'string'
-          ? err
-          : (err && (err.message || err.code)) || 'Error desconocido';
-        this.status(msg, 'error');
-        this.emit('error', { error: err, message: msg, engine: this.engineName });
-      }
-    };
-  })(window);
-
-  /* ------------------------------------------------------------------ *
-   *  registry.js — registro de motores y fábrica VP.create()
-   * ------------------------------------------------------------------ */
-  (function (global) {
-    'use strict';
-    var VP = (global.VP = global.VP || {});
-
-    VP.config = VP.config || {};
-    VP.config.defaultType = VP.config.defaultType || 'native';
-    VP.config.apiTimeout = (VP.config.apiTimeout === undefined) ? 15000 : VP.config.apiTimeout;
-    VP.config.apiMode = VP.config.apiMode || 'iframe';
-    VP.config.typeAliases = VP.config.typeAliases || {};
-    VP.config.engineAliases = VP.config.engineAliases || {
-      'clappr': 'clappr',
-      'videojs': 'oplayer'
-    };
-
-    VP._engines = {};
-
-    VP.register = function (name, Ctor, meta) {
-      VP._engines[name] = { Ctor: Ctor, meta: meta || {} };
-    };
-
-    VP.hasEngine = function (name) { return !!VP._engines[name]; };
-
-    VP.engines = function () {
-      var list = [];
-      for (var k in VP._engines) if (VP._engines.hasOwnProperty(k)) list.push(k);
-      return list;
-    };
-
-    VP.engineInfo = function (name) {
-      var e = VP._engines[name];
-      return e ? { name: name, label: e.meta.label || name, meta: e.meta } : null;
-    };
-
-    VP.normalizeType = function (type) {
-      if (type === undefined || type === null || type === '') return VP.config.defaultType;
-      var s = String(type).trim().toLowerCase();
-      if (/^\d+$/.test(s)) {
-        return VP.config.typeAliases[s] || s;
-      }
-      return s;
-    };
-
-    VP.create = function (container, config) {
-      if (typeof container === 'string') container = document.querySelector(container);
-      if (!container) throw new Error('VP.create: contenedor no encontrado');
-
-      var cfg = Object.assign({}, config || {});
-      var engine = VP.normalizeType(cfg.type);
-      var entry = VP._engines[engine];
-      if (!entry) {
-        throw new Error('VP.create: motor no soportado ("' + cfg.type + '"). Disponibles: ' + VP.engines().join(', '));
-      }
-
-      VP.destroy(container);
-      container.innerHTML = '';
-      container.classList.add('vp-player');
-      container.setAttribute('data-vp-engine', engine);
-
-      var instance = new entry.Ctor(container, cfg);
-      instance.engineName = engine;
-      container.__vp = instance;
-
-      instance.emit('mount', { engine: engine });
-
-      Promise.resolve()
-        .then(function () { return instance.mount(); })
-        .then(function () {
-          if (!instance._destroyed) instance.emit('ready', { engine: engine });
-        })
-        ['catch'](function (err) { instance.fail(err); });
-
-      return instance;
-    };
-
-    VP.destroy = function (container) {
-      if (typeof container === 'string') container = document.querySelector(container);
-      if (container && container.__vp) {
-        try { container.__vp.destroy(); } catch (e) { /* noop */ }
-        container.__vp = null;
-      }
-    };
-  })(window);
-
-  /* ------------------------------------------------------------------ *
-   *  api.js — obtiene la configuración de un canal desde el backend
-   * ------------------------------------------------------------------ */
-  (function (global) {
-    'use strict';
-    var VP = (global.VP = global.VP || {});
-
-    function first() {
-      for (var i = 0; i < arguments.length; i++) {
-        var v = arguments[i];
-        if (v !== undefined && v !== null && v !== '') return v;
-      }
-      return undefined;
-    }
-
-    function scanValue(s, i) {
-      var c = s.charAt(i);
-      if (c === '"' || c === "'") {
-        var q = c, j = i + 1;
-        while (j < s.length) {
-          var d = s.charAt(j);
-          if (d === '\\') { j += 2; continue; }
-          if (d === q) return j + 1;
-          j++;
-        }
-        return -1;
-      }
-      if (c === '{' || c === '[') {
-        var depth = 0, k = i;
-        while (k < s.length) {
-          var e = s.charAt(k);
-          if (e === '"' || e === "'") { var n = scanValue(s, k); if (n < 0) return -1; k = n; continue; }
-          if (e === '{' || e === '[') depth++;
-          else if (e === '}' || e === ']') { depth--; if (depth === 0) return k + 1; }
-          k++;
-        }
-        return -1;
-      }
-      var end = i;
-      while (end < s.length && s.charAt(end) !== ';' && s.charAt(end) !== '\n' && s.charAt(end) !== '\r') end++;
-      return end;
-    }
-
-    function readVar(html, name) {
-      var re = new RegExp('\\b' + name + '\\s*=\\s*', 'g');
-      var m;
-      while ((m = re.exec(html)) !== null) {
-        var i = m.index + m[0].length;
-        var c = html.charAt(i);
-        var ok = c === '{' || c === '[' || c === '"' || c === "'" ||
-                 c === 'n' || c === 't' || c === 'f' || c === '-' || (c >= '0' && c <= '9');
-        if (!ok) continue;
-        var end = scanValue(html, i);
-        if (end < 0) continue;
-        try { return JSON.parse(html.slice(i, end)); } catch (e) { /* siguiente coincidencia */ }
-      }
-      return undefined;
-    }
-
-    var ZT_VARS = [
-      'ZT_ENGINE', 'ZT_UMAMI', 'ZT_SOURCES', 'ZT_STREAM_URL', 'ZT_SRC_GATE',
-      'ZT_RENEW', 'ZT_CDN_VIEWERS_URL', 'ZT_VIEWERS_WS', 'ZT_P2P', 'ZT_BEAT',
-      'ZT_CONN_TOKEN', 'ZT_CONN_HB_URL', 'ZT_CONN_LIMIT', 'ZT_CONN_MAX',
-      'ZT_PREMIUM_GATE', 'ZT_APP_GATE', 'ZT_TS_LOG_URL', 'ZT_BLOCK_ADBLOCK'
-    ];
-
-    VP.api = {
-      base: '/api/player/',
-
-      url: function (channel) {
-        var s = String(channel == null ? '' : channel).trim();
-        if (/^https?:\/\//i.test(s)) return s;
-        return VP.api.base + s.replace(/^\/+/, '');
-      },
-
-      load: function (channel, options) {
-        options = options || {};
-        var mode = options.mode || VP.config.apiMode || 'iframe';
-        if (mode === 'iframe') return VP.api.iframe(channel, options);
-        return VP.api.fetchConfig(channel, options);
-      },
-
-      iframe: function (channel, options) {
-        options = options || {};
-        var url = VP.api.url(channel);
-        return Promise.resolve(VP.api._finish({
-          type: 'iframe',
-          src: url,
-          title: options.title || null,
-          channel: channel,
-          lazy: options.lazy,
-          options: options.iframeOptions
-        }, { channel: channel, endpoint: url, mode: 'iframe' }, url));
-      },
-
-      fetchConfig: function (channel, options) {
-        var url = VP.api.url(channel);
-        options = options || {};
-        var timeout = (options.timeout !== undefined) ? options.timeout : (VP.config.apiTimeout || 0);
-
-        var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
-        var timer = null;
-        if (controller && timeout > 0) {
-          timer = setTimeout(function () { controller.abort(); }, timeout);
-        }
-        function clear() { if (timer) { clearTimeout(timer); timer = null; } }
-
-        var headers = Object.assign({ 'Accept': 'application/json, text/html, */*' }, options.headers);
-        var init = { headers: headers, credentials: options.credentials || 'same-origin' };
-        if (controller) init.signal = controller.signal;
-
-        return fetch(url, init).then(function (res) {
-          clear();
-          if (!res.ok) throw new Error('API ' + res.status + ' al pedir ' + url);
-          var ct = (res.headers.get('content-type') || '').toLowerCase();
-          if (ct.indexOf('json') !== -1) {
-            return res.json().then(function (j) { return VP.api.normalize(j, url); });
-          }
-          return res.text().then(function (txt) {
-            var t = txt.replace(/^\uFEFF/, '').trim();
-            if (t.charAt(0) === '{' || t.charAt(0) === '[') {
-              try { return VP.api.normalize(JSON.parse(t), url); } catch (e) { /* no era JSON */ }
-            }
-            return VP.api.fromHtml(txt, url, options);
-          });
-        }, function (err) {
-          clear();
-          if (err && err.name === 'AbortError') {
-            throw new Error('Tiempo de espera agotado (' + timeout + ' ms) al consultar ' + url);
-          }
-          throw new Error('No se pudo conectar con ' + url + ' (' + ((err && err.message) || 'error de red') + ')');
-        });
-      },
-
-      parseZt: function (html) {
-        html = String(html || '');
-        var out = { raw: html };
-        for (var i = 0; i < ZT_VARS.length; i++) {
-          var name = ZT_VARS[i];
-          var v = readVar(html, name);
-          if (v !== undefined) out[name] = v;
-        }
-        out.engine  = out.ZT_ENGINE || null;
-        out.title   = (out.ZT_UMAMI && out.ZT_UMAMI.canal) || null;
-        out.channel = (out.ZT_VIEWERS_WS && out.ZT_VIEWERS_WS.channel) || null;
-        out.sources = Array.isArray(out.ZT_SOURCES) ? out.ZT_SOURCES : [];
-        out.renew   = out.ZT_RENEW || null;
-        out.gate    = out.ZT_SRC_GATE || null;
-        return out;
-      },
-
-      isPlayerPage: function (zt) {
-        return !!(zt && (zt.ZT_ENGINE !== undefined || zt.sources.length || zt.renew));
-      },
-
-      usableSources: function (sources) {
-        return (sources || []).filter(function (s) {
-          return s && s.url && !s.locked && !s.off;
-        });
-      },
-
-      fromHtml: function (html, pageUrl, options) {
-        options = options || {};
-        var zt = VP.api.parseZt(html);
-
-        if (!VP.api.isPlayerPage(zt)) {
-          return VP.api.normalize({ html: html }, pageUrl);
-        }
-
-        var provided = (options.sources && options.sources.length) ? options.sources : null;
-        if (provided) return VP.api._config(zt, provided, { sources: provided, mock: true }, pageUrl);
-
-        if (VP.api.usableSources(zt.sources).length) {
-          return VP.api._config(zt, zt.sources, null, pageUrl);
-        }
-
-        if (zt.ZT_STREAM_URL) {
-          return VP.api._config(zt, [{ url: zt.ZT_STREAM_URL, label: 'stream' }], null, pageUrl);
-        }
-
-        if (zt.renew) {
-          return VP.api.renew(zt.renew, options, pageUrl).then(function (r) {
-            var list = (r.sources && r.sources.length) ? r.sources : zt.sources;
-            return VP.api._config(zt, list, r, pageUrl);
-          });
-        }
-
-        if (zt.gate) {
-          throw new Error('El canal exige verificación (Cloudflare Turnstile). ' +
-            'Pasa options.turnstileToken o resuelve la puerta antes de llamar a VP.api.load().');
-        }
-        throw new Error('La página del canal no contiene fuentes ni endpoint de renovación (ZT_RENEW).');
-      },
-
-      renew: function (renewCfg, options, pageUrl) {
-        options = options || {};
-        if (!renewCfg || !renewCfg.url) return Promise.reject(new Error('ZT_RENEW sin url'));
-        var url = renewCfg.url;
-        if (!/^(https?:)?\/\//i.test(url)) {
-          var base = pageUrl;
-          if (!base || !/^(https?:)?\/\//i.test(base)) base = (global.location && global.location.href) || '';
-          try { url = new URL(url, base).href; } catch (e) { /* se deja relativa tal cual */ }
-        }
-
-        var body = { native: !!options.native };
-        if (renewCfg.view) {
-          body.view = true;
-          if (options.ref !== undefined) body.ref = options.ref;
-        }
-        if (renewCfg.conn) {
-          body.sid = options.sid || VP.api.sid();
-          body.src = true;
-        }
-
-        var headers = Object.assign({ 'Content-Type': 'application/json', 'Accept': 'application/json' }, options.headers);
-        return fetch(url, {
-          method: 'POST',
-          headers: headers,
-          body: JSON.stringify(body),
-          credentials: options.credentials || 'same-origin'
-        }).then(function (r) {
-          if (r.status === 403) throw new Error('403: token caducado o cuenta sin permiso');
-          if (r.status === 404) throw new Error('404: canal retirado o enlace caducado');
-          if (!r.ok) throw new Error('renew HTTP ' + r.status);
-          return r.json();
-        }).then(function (d) {
-          d = d || {};
-          return {
-            sources: d.sources || [],
-            ttl: d.ttl,
-            played: d.played,
-            over: !!d.over,
-            raw: d
-          };
-        });
-      },
-
-      sid: function () {
-        try {
-          var k = 'vp_sid', v = localStorage.getItem(k);
-          if (!v) { v = Date.now().toString(36) + Math.random().toString(36).slice(2, 10); localStorage.setItem(k, v); }
-          return v;
-        } catch (e) {
-          if (!global.__vpSid) global.__vpSid = Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
-          return global.__vpSid;
-        }
-      },
-
-      engineFor: function (ztEngine, src) {
-        var e = ztEngine ? String(ztEngine).toLowerCase() : '';
-        var aliases = VP.config.engineAliases || {};
-        if (e && aliases[e]) return aliases[e];
-        if (e && VP.hasEngine(e)) return e;
-        return VP.api.inferType(src);
-      },
-
-      _config: function (zt, sources, renewData, pageUrl) {
-        sources = sources || [];
-        var usable = VP.api.usableSources(sources);
-        var chosen = usable.length ? usable[0] : null;
-        var idx = chosen ? sources.indexOf(chosen) : -1;
-
-        return VP.api._finish({
-          type: VP.api.engineFor(zt.engine, chosen && chosen.url),
-          src: chosen ? chosen.url : null,
-          title: zt.title || null,
-          engine: zt.engine || null,
-          channel: zt.channel,
-          sources: sources,
-          sourceIndex: idx,
-          sourceLabel: chosen ? chosen.label : null,
-          renew: renewData ? renewData.raw : null,
-          zt: zt
-        }, zt, pageUrl);
-      },
-
-      normalize: function (data, url) {
-        data = data || {};
-
-        var d = data;
-        if (data.data && typeof data.data === 'object') d = data.data;
-        else if (data.player && typeof data.player === 'object') d = data.player;
-
-        var html = (typeof data === 'string') ? data : (d.html || d.embed_html || d.iframe);
-        if (html && typeof html === 'string' && /<\w+/.test(html)) {
-          var ifr = html.match(/<iframe[^>]+src=["']([^"']+)["']/i);
-          if (ifr) return VP.api._finish({ type: 'iframe', src: ifr[1] }, data, url);
-          var vid = html.match(/<source[^>]+src=["']([^"']+)["']/i) ||
-                    html.match(/<video[^>]+src=["']([^"']+)["']/i);
-          if (vid) return VP.api._finish({ type: 'native', src: vid[1] }, data, url);
-          return VP.api._finish({ type: 'iframe', src: url }, data, url);
-        }
-
-        var type   = first(d.type, d.tipo, d.engine, d.player_type, d.kind);
-        var src    = first(d.src, d.source, d.url, d.file, d.stream, d.link, d.embed, d.m3u8, d.mpd);
-        var poster = first(d.poster, d.image, d.thumb, d.thumbnail, d.logo, d.picture, d.cover);
-        var title  = first(d.title, d.name, d.nombre, d.titulo, d.channel_name);
-        var mime   = first(d.mimeType, d.mime, d.contentType);
-
-        if (type !== undefined && type !== null && /^\d+$/.test(String(type).trim())) {
-          type = VP.config.typeAliases[String(type).trim()] || type;
-        }
-        type = (type === undefined || type === null || type === '') ? null : String(type).toLowerCase();
-        if (type && VP.config.engineAliases && VP.config.engineAliases[type]) {
-          type = VP.config.engineAliases[type];
-        }
-
-        if (!type && src) type = VP.api.inferType(src);
-
-        return VP.api._finish({
-          type: type || VP.config.defaultType,
-          src: src,
-          poster: poster,
-          title: title,
-          mimeType: mime
-        }, data, url);
-      },
-
-      inferType: function (src) {
-        if (typeof VP.config.inferType === 'function') return VP.config.inferType(src);
-        src = String(src || '');
-        if (!src) return null;
-        if (VP.isHls(src) || VP.isDash(src)) return 'shaka';
-        if (VP.isEmbeddable(src)) return 'iframe';
-        if (/\.(mp4|webm|ogg|m4v|mov)(\?|#|$)/i.test(src)) return 'native';
-        if (/^https?:\/\//i.test(src)) return 'iframe';
-        return 'native';
-      },
-
-      _finish: function (partial, raw, url) {
-        var channel = (raw && (raw.channel != null ? raw.channel
-          : (raw.ZT_VIEWERS_WS && raw.ZT_VIEWERS_WS.channel)))
-          || (partial && partial.channel);
-        var out = {
-          channel: channel,
-          endpoint: url,
-          autoplay: false
-        };
-        for (var k in partial) if (partial[k] !== undefined) out[k] = partial[k];
-        out.raw = raw;
-        return out;
-      }
-    };
-  })(window);
-
-  /* ------------------------------------------------------------------ *
-   *  players/native.js — <video> HTML5 nativo
-   * ------------------------------------------------------------------ */
-  (function (global) {
-    'use strict';
-    var VP = global.VP;
-
-    function NativePlayer(container, config) {
-      VP.BasePlayer.call(this, container, config);
-    }
-    NativePlayer.prototype = Object.create(VP.BasePlayer.prototype);
-    NativePlayer.prototype.constructor = NativePlayer;
-
-    NativePlayer.prototype.mount = function () {
-      var cfg = this.config;
-      if (!cfg.src) return Promise.reject(new Error('Falta la fuente del video (src)'));
-
-      var video = document.createElement('video');
-      video.className = 'vp-video';
-      video.controls = true;
-      video.playsInline = true;
-      video.setAttribute('playsinline', '');
-      video.preload = cfg.preload || 'metadata';
-      if (cfg.poster) video.poster = cfg.poster;
-      if (cfg.loop) video.loop = true;
-      if (cfg.muted) video.muted = true;
-
-      var source = document.createElement('source');
-      source.src = cfg.src;
-      source.type = cfg.mimeType || VP.guessMime(cfg.src);
-      video.appendChild(source);
-
-      var self = this;
-      video.addEventListener('error', function () {
-        self.fail('No se pudo reproducir el video: ' + cfg.src);
-      });
-
-      this.el = video;
-      this.player = video;
-      this.container.appendChild(video);
-
-      if (cfg.autoplay) {
-        var p = video.play();
-        if (p && p['catch']) p['catch'](function () {});
-      }
-      return Promise.resolve();
-    };
-
-    NativePlayer.prototype.onDestroy = function () {
-      if (this.player) {
-        try { this.player.pause(); } catch (e) { /* noop */ }
-        this.player.removeAttribute('src');
-        try { this.player.load(); } catch (e) { /* noop */ }
-      }
-    };
-
-    VP.register('native', NativePlayer, { label: 'HTML5 nativo', internal: true });
-  })(window);
-
-  /* ------------------------------------------------------------------ *
-   *  players/iframe.js — <iframe> para embeds externos
-   * ------------------------------------------------------------------ */
-  (function (global) {
-    'use strict';
-    var VP = global.VP;
-
-    function IframePlayer(container, config) {
-      VP.BasePlayer.call(this, container, config);
-    }
-    IframePlayer.prototype = Object.create(VP.BasePlayer.prototype);
-    IframePlayer.prototype.constructor = IframePlayer;
-
-    IframePlayer.prototype.mount = function () {
-      var cfg = this.config;
-      var options = cfg.options || {};
-      var url = VP.toEmbedUrl(cfg.src);
-
-      if (!url) return Promise.reject(new Error('https://zicotv.cc/api/player/11'));
-
-      var iframe = document.createElement('iframe');
-      iframe.className = 'vp-iframe';
-      iframe.src = url;
-      iframe.title = cfg.title || 'Video';
-      iframe.setAttribute('frameborder', '0');
-      iframe.setAttribute('allowfullscreen', '');
-      iframe.setAttribute('scrolling', 'no');
-      iframe.setAttribute('referrerpolicy', options.referrerPolicy || 'strict-origin-when-cross-origin');
-      iframe.allow = options.allow ||
-        'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen';
-      iframe.loading = cfg.lazy === false ? 'eager' : 'lazy';
-      iframe.allowFullscreen = true;
-
-      this.el = iframe;
-      this.player = iframe;
-      this.container.appendChild(iframe);
-      return Promise.resolve();
-    };
-
-    VP.register('iframe', IframePlayer, { label: 'iframe / embed' });
-  })(window);
-
-  /* ------------------------------------------------------------------ *
-   *  players/oplayer.js — OpenPlayerJS
-   * ------------------------------------------------------------------ */
-  (function (global) {
-    'use strict';
-    var VP = global.VP;
-
-    function OPlayerPlayer(container, config) {
-      VP.BasePlayer.call(this, container, config);
-    }
-    OPlayerPlayer.prototype = Object.create(VP.BasePlayer.prototype);
-    OPlayerPlayer.prototype.constructor = OPlayerPlayer;
-
-    OPlayerPlayer.prototype.mount = function () {
-      var self = this;
-      var cfg = this.config;
-      if (!cfg.src) return Promise.reject(new Error('https://zicotv.cc/api/player/11'));
-
-      var isHls = VP.isHls(cfg.src);
-
-      return VP.loadLib('openplayer').then(function () {
-        if (isHls) return VP.loadLib('openplayerHls')['catch'](function () { return null; });
-        return null;
-      }).then(function () {
-        if (self._destroyed) return;
-
-        var OpenPlayer = global.OpenPlayerJS || global.OpenPlayer;
-        if (typeof OpenPlayer !== 'function') throw new Error('OpenPlayerJS no está disponible');
-
-        var video = document.createElement('video');
-        video.id = VP.uid('op');
-        video.className = 'op-player__media vp-video';
-        video.controls = true;
-        video.playsInline = true;
-        video.setAttribute('playsinline', '');
-        video.preload = cfg.preload || 'metadata';
-        if (cfg.poster) video.poster = cfg.poster;
-        if (cfg.muted) video.muted = true;
-
-        var source = document.createElement('source');
-        source.src = cfg.src;
-        source.type = cfg.mimeType || VP.guessMime(cfg.src);
-        video.appendChild(source);
-
-        self.el = video;
-        self.container.appendChild(video);
-
-        var opts = Object.assign({}, (cfg.options && cfg.options.openplayer) || {});
-        self.player = new OpenPlayer(video.id, opts);
-        if (self.player && typeof self.player.init === 'function') self.player.init();
-
-        if (cfg.autoplay && self.player && typeof self.player.play === 'function') {
-          try { self.player.play(); } catch (e) { /* noop */ }
-        }
-      });
-    };
-
-    OPlayerPlayer.prototype.onDestroy = function () {
-      if (this.player && typeof this.player.destroy === 'function') {
-        try { this.player.destroy(); } catch (e) { /* noop */ }
-      }
-    };
-
-    VP.register('oplayer', OPlayerPlayer, { label: 'OpenPlayerJS', lib: 'openplayer' });
-  })(window);
-
-  /* ------------------------------------------------------------------ *
-   *  players/shaka.js — Google Shaka Player (DASH, HLS)
-   * ------------------------------------------------------------------ */
-  (function (global) {
-    'use strict';
-    var VP = global.VP;
-
-    function ShakaPlayer(container, config) {
-      VP.BasePlayer.call(this, container, config);
-    }
-    ShakaPlayer.prototype = Object.create(VP.BasePlayer.prototype);
-    ShakaPlayer.prototype.constructor = ShakaPlayer;
-
-    ShakaPlayer.prototype.mount = function () {
-      var self = this;
-      var cfg = this.config;
-      if (!cfg.src) return Promise.reject(new Error('https://zicotv.cc/api/player/11'));
-
-      return VP.loadLib('shaka').then(function () {
-        if (self._destroyed) return;
-        var shaka = global.shaka;
-        if (!shaka) throw new Error('Shaka Player no está disponible');
-
-        if (shaka.polyfill && typeof shaka.polyfill.installAll === 'function') {
-          shaka.polyfill.installAll();
-        }
-        if (typeof shaka.Player.isBrowserSupported === 'function' && !shaka.Player.isBrowserSupported()) {
-          throw new Error('Este navegador no soporta Shaka Player');
-        }
-
-        var video = document.createElement('video');
-        video.className = 'vp-video';
-        video.controls = true;
-        video.playsInline = true;
-        video.setAttribute('playsinline', '');
-        video.preload = cfg.preload || 'metadata';
-        if (cfg.poster) video.poster = cfg.poster;
-        if (cfg.muted) video.muted = true;
-
-        self.el = video;
-        self.container.appendChild(video);
-
-        var player;
-        try { player = new shaka.Player(video); }
-        catch (e) { player = new shaka.Player(); }
-        self.player = player;
-
-        var needsAttach = typeof player.getMediaElement === 'function' && !player.getMediaElement();
-        var ready = (needsAttach && typeof player.attach === 'function')
-          ? Promise.resolve(player.attach(video))
-          : Promise.resolve();
-
-        if (typeof player.addEventListener === 'function') {
-          player.addEventListener('error', function (ev) {
-            var detail = ev && ev.detail;
-            self.fail('Shaka: ' + ((detail && detail.message) || 'error de reproducción'));
-          });
-        }
-
-        return ready
-          .then(function () { return player.load(cfg.src); })
-          .then(function () {
-            if (cfg.autoplay) {
-              var p = video.play();
-              if (p && p['catch']) p['catch'](function () {});
-            }
-          });
-      });
-    };
-
-    ShakaPlayer.prototype.onDestroy = function () {
-      if (this.player && typeof this.player.destroy === 'function') {
-        try {
-          var p = this.player.destroy();
-          if (p && p['catch']) p['catch'](function () {});
-        } catch (e) { /* noop */ }
-      }
-    };
-
-    VP.register('shaka', ShakaPlayer, { label: 'Shaka Player', lib: 'shaka' });
-  })(window);
-
-  /* ------------------------------------------------------------------ *
-   *  players/clappr.js — Clappr (HLS con hls.js incluido)
-   * ------------------------------------------------------------------ */
-  (function (global) {
-    'use strict';
-    var VP = global.VP;
-
-    function ClapprPlayer(container, config) {
-      VP.BasePlayer.call(this, container, config);
-    }
-    ClapprPlayer.prototype = Object.create(VP.BasePlayer.prototype);
-    ClapprPlayer.prototype.constructor = ClapprPlayer;
-
-    ClapprPlayer.prototype.mount = function () {
-      var self = this;
-      var cfg = this.config;
-      if (!cfg.src) return Promise.reject(new Error('https://zicotv.cc/api/player/11'));
-
-      return VP.loadLib('clappr').then(function () {
-        if (self._destroyed) return;
-        var Clappr = global.Clappr;
-        if (!Clappr || typeof Clappr.Player !== 'function') throw new Error('Clappr no está disponible');
-
-        var holder = document.createElement('div');
-        holder.className = 'vp-clappr';
-        holder.id = VP.uid('clappr');
-        self.el = holder;
-        self.container.appendChild(holder);
-
-        var opts = Object.assign({
-          parentId: '#' + holder.id,
-          source: cfg.src,
-          width: '100%',
-          height: '100%',
-          autoPlay: !!cfg.autoplay,
-          mute: !!cfg.muted,
-          loop: !!cfg.loop,
-          playback: {
-            playInline: true,
-            hlsjsConfig: Object.assign({
-              manifestLoadingTimeOut: 30000,
-              levelLoadingTimeOut: 30000,
-              fragLoadingTimeOut: 30000
-            }, (cfg.options && cfg.options.hlsjsConfig) || {})
-          }
-        }, (cfg.options && cfg.options.clappr) || {});
-        if (cfg.poster && !opts.poster) opts.poster = cfg.poster;
-
-        self.player = new Clappr.Player(opts);
-
-        if (cfg.autoplay && self.player && typeof self.player.play === 'function') {
-          var readyEvent = (Clappr.Events && Clappr.Events.PLAYER_READY) || 'playback:ready';
-          self.player.on(readyEvent, function () {
-            try { self.player.play(); } catch (e) { /* noop */ }
-          });
-        }
-      });
-    };
-
-    ClapprPlayer.prototype.onDestroy = function () {
-      if (this.player && typeof this.player.destroy === 'function') {
-        try { this.player.destroy(); } catch (e) { /* noop */ }
-      }
-    };
-
-    VP.register('clappr', ClapprPlayer, { label: 'Clappr', lib: 'clappr' });
-  })(window);
-
-  /* ------------------------------------------------------------------ *
-   *  players/placeholder.js — póster "click to play"
-   * ------------------------------------------------------------------ */
-  (function (global) {
-    'use strict';
-    var VP = global.VP;
-
-    function PlaceholderPlayer(container, config) {
-      VP.BasePlayer.call(this, container, config);
-      this.child = null;
-    }
-    PlaceholderPlayer.prototype = Object.create(VP.BasePlayer.prototype);
-    PlaceholderPlayer.prototype.constructor = PlaceholderPlayer;
-
-    PlaceholderPlayer.prototype.mount = function () {
-      var self = this;
-      var cfg = this.config;
-
-      var wrapper = document.createElement('button');
-      wrapper.type = 'button';
-      wrapper.className = 'vp-placeholder';
-      wrapper.setAttribute('aria-label', 'Reproducir ' + (cfg.title || 'video'));
-
-      if (cfg.poster) {
-        var img = document.createElement('img');
-        img.src = cfg.poster;
-        img.alt = cfg.title || '';
-        img.loading = 'lazy';
-        wrapper.appendChild(img);
-      }
-
-      var play = document.createElement('span');
-      play.className = 'vp-play';
-      play.setAttribute('aria-hidden', 'true');
-      wrapper.appendChild(play);
-
-      if (cfg.title) {
-        var t = document.createElement('span');
-        t.className = 'vp-ph-title';
-        t.textContent = cfg.title;
-        wrapper.appendChild(t);
-      }
-
-      wrapper.addEventListener('click', function (ev) {
-        ev.preventDefault();
-        self._loadReal();
-      });
-
-      this.el = wrapper;
-      this.container.appendChild(wrapper);
-      return Promise.resolve();
-    };
-
-    PlaceholderPlayer.prototype._loadReal = function () {
-      if (this.child || this._destroyed) return;
-      var cfg = this.config;
-
-      var inner = Object.assign({}, cfg.player || {});
-      if (!inner.type) inner.type = cfg.fallbackType || 'native';
-      if (!inner.src && cfg.src) inner.src = cfg.src;
-      if (!inner.poster && cfg.poster) inner.poster = cfg.poster;
-      if (!inner.title && cfg.title) inner.title = cfg.title;
-      if (inner.autoplay === undefined) inner.autoplay = true;
-
-      var engine = VP.normalizeType(inner.type);
-      var entry = VP._engines[engine];
-      if (!entry) { this.fail('Motor interno no soportado: ' + inner.type); return; }
-
-      if (this.el && this.el.parentNode) this.el.parentNode.removeChild(this.el);
-      this.el = null;
-
-      var self = this;
-      var child = new entry.Ctor(this.container, inner);
-      child.engineName = engine;
-      this.child = child;
-
-      Promise.resolve()
-        .then(function () { return child.mount(); })
-        .then(function () {
-          if (self._destroyed) return;
-          child.emit('ready', { engine: engine, from: 'placeholder' });
-          self.emit('play', { engine: engine });
-        })
-        ['catch'](function (err) { child.fail(err); });
-    };
-
-    PlaceholderPlayer.prototype.onDestroy = function () {
-      if (this.child) {
-        try { this.child.destroy(); } catch (e) { /* noop */ }
-        this.child = null;
-      }
-    };
-
-    VP.register('placeholder', PlaceholderPlayer, { label: 'Placeholder (click to play)' });
-  })(window);
-  </script>
-
-  <!-- =====================================================================
-       CONFIGURACIÓN Y ARRANQUE  (iframe por defecto · parse opcional)
-       ===================================================================== -->
-  <script>
-  (function () {
-    'use strict';
-
-    /* ============================================================
-     *  CONFIGURACIÓN
-     * ============================================================ */
-
-   // Endpoint del backend (absoluto). Así esta página funciona desde
-    // cualquier dominio: el canal 4 resuelve a
-    //   https://zicotv.cc/api/player/4
-    // El modo iframe no necesita CORS; el modo parse sí lo necesita.
-    VP.api.base = 'https://zicotv.cc/api/player/';
-
-    // Modo por defecto de la página: 'iframe' o 'parse'.
-    VP.config.apiMode = 'iframe';
-
-    // Tiempo máximo de espera al descargar la página del canal (modo parse).
-    VP.config.apiTimeout = 15000;
-
-    // Motor del backend (ZT_ENGINE) -> motor de VP.
-    VP.config.engineAliases = { clappr: 'clappr', videojs: 'oplayer' };
-
-    /* ============================================================
-     *  PARÁMETROS (?canal=4  ·  ?mode=parse  ·  ?autoplay=0  ·  ?muted=1)
-     * ============================================================ */
-    var q            = new URLSearchParams(location.search);
-    var canal        = q.get('canal') || '4';
-    var mode         = q.get('mode') === 'parse' ? 'parse' : 'iframe';
-    var wantAutoplay = q.get('autoplay') !== '0';
-    var wantMuted    = q.get('muted') === '1';
-
-    /* ============================================================
-     *  ESTADO
-     * ============================================================ */
-    var mount    = document.getElementById('player');
-    var uiTitle  = document.getElementById('ui-title');
-    var uiCdns   = document.getElementById('ui-cdns');
-    var uiStatus = document.getElementById('ui-status');
-    var btnIframe = document.getElementById('mode-iframe');
-    var btnParse  = document.getElementById('mode-parse');
-
-    var renewTimer    = null;   // temporizador de renovación (modo parse)
-    var selectedLabel = null;   // servidor elegido (se conserva al renovar)
-
-    function setStatus(text) { uiStatus.textContent = text || ''; }
-
-    function clearRenew() {
-      if (renewTimer) { clearTimeout(renewTimer); renewTimer = null; }
-    }
-
-    function updateModeButtons() {
-      btnIframe.setAttribute('aria-pressed', String(mode === 'iframe'));
-      btnParse.setAttribute('aria-pressed', String(mode === 'parse'));
-    }
-
-    function fail(msg) {
-      clearRenew();
-      VP.destroy(mount);
-      mount.classList.add('vp-player');
-      mount.setAttribute('data-vp-status', 'error');
-      mount.innerHTML = '<div class="vp-overlay"><div class="vp-error"></div></div>';
-      mount.querySelector('.vp-error').textContent = msg;
-      setStatus('error');
-      console.error('[VP]', msg);
-    }
-
-    /* Servidores utilizables: con URL y sin bloqueo/caída. */
-    function usableIndexes(sources) {
-      var out = [];
-      (sources || []).forEach(function (s, i) {
-        if (s && s.url && !s.locked && !s.off) out.push(i);
-      });
-      return out;
-    }
-
-    /* ---- modo parse: monta un servidor y pinta el selector de CDN ---- */
-    function play(config, index) {
-      var s = config.sources[index];
-      if (!s || !s.url) return;
-
-      selectedLabel = s.label || null;
-
-      VP.create('#player', {
-        type: config.type,          // motor decidido por ZT_ENGINE
-        src: s.url,                 // URL firmada devuelta por /renew
-        title: config.title,
-        autoplay: wantAutoplay,
-        muted: wantMuted,
-        sourceLabel: s.label
-      });
-
-      renderCdns(config, index);
-      setStatus(s.label || '');
-    }
-
-    function renderCdns(config, activeIndex) {
-      uiCdns.innerHTML = '';
-      (config.sources || []).forEach(function (s, i) {
-        if (!s || s.hidden) return;
-
-        var b = document.createElement('button');
-        b.type = 'button';
-        b.className = 'pill';
-        b.textContent = s.label || ('Servidor ' + (i + 1));
-        b.setAttribute('aria-pressed', String(i === activeIndex));
-
-        if (!s.url || s.locked || s.off) {
-          b.disabled = true;
-          if (s.locked) b.textContent += ' 🔒';
-        } else {
-          b.addEventListener('click', function () { play(config, i); });
-        }
-        uiCdns.appendChild(b);
-      });
-    }
-
-    /* Renueva las URLs firmadas antes de que caduque el token (ttl). */
-    function scheduleRenew(config) {
-      clearRenew();
-      var ttl = config.renew && config.renew.ttl;
-      if (!ttl || ttl < 30) return;
-
-      var wait = Math.max(20, ttl - 60) * 1000;   // 60 s de margen
-      renewTimer = setTimeout(load, wait);
-      setStatus((selectedLabel || '') + ' · renueva en ' + Math.round(wait / 1000) + ' s');
-    }
-
-    /* ============================================================
-     *  ARRANQUE
-     * ============================================================ */
-    function load() {
-      clearRenew();
-      updateModeButtons();
-      uiTitle.textContent = 'Canal ' + canal;
-      setStatus('cargando…');
-
-      /* ---- modo iframe: incrusta la propia página del canal ---- */
-      if (mode === 'iframe') {
-        uiCdns.innerHTML = '';
-        VP.api.load(canal, { mode: 'iframe' }).then(function (config) {
-          VP.create('#player', config);
-          setStatus('iframe');
-        })['catch'](function (err) {
-          fail((err && err.message) || 'No se pudo cargar el canal.');
-        });
-        return;
-      }
-
-      /* ---- modo parse: lee las ZT_* y pide las URLs a /renew ---- */
-      VP.api.load(canal, { mode: 'parse' }).then(function (config) {
-        if (!config.sources || !config.sources.length) {
-          throw new Error('El canal no devolvió servidores.');
-        }
-
-        // Conserva el servidor elegido entre renovaciones (por etiqueta).
-        var idx = config.sourceIndex;
-        if (selectedLabel) {
-          config.sources.forEach(function (s, i) {
-            if (s && s.label === selectedLabel && s.url) idx = i;
-          });
-        }
-        if (idx == null || idx < 0 || !config.sources[idx] || !config.sources[idx].url) {
-          var ok = usableIndexes(config.sources);
-          idx = ok.length ? ok[0] : -1;
-        }
-        if (idx < 0) {
-          throw new Error('Ningún servidor tiene URL utilizable ' +
-            '(posible puerta Turnstile o canal sin fuentes).');
-        }
-
-        play(config, idx);
-        scheduleRenew(config);
-      })['catch'](function (err) {
-        fail((err && err.message) || 'No se pudo cargar el canal.');
-      });
-    }
-
-    /* Conmutador de modo */
-    btnIframe.addEventListener('click', function () {
-      if (mode === 'iframe') return;
-      mode = 'iframe'; selectedLabel = null; load();
+</header>
+
+<main class="layout">
+  <a href="/?tab=events" class="back-link">← Volver al directo</a>
+
+  
+  <section class="vc-player" id="vcPlayer" data-state="prelude">
+
+    <div class="vc-stage" id="vcStage">
+      <iframe id="vcIframe" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen hidden></iframe>
+      <video id="vcVideo" playsinline preload="metadata" hidden style="position:absolute;inset:0;width:100%;height:100%;background:#000;object-fit:contain"></video>
+      <style>
+        /* Forzamos que [hidden] gane sobre cualquier display inline/CSS — el UA
+           [hidden]{display:none} pierde cuando algo da display explícito */
+        #vcVideo[hidden], #vcIframe[hidden] { display: none !important; }
+      </style>
+    </div>
+
+    <!-- ── PRELUDE ── -->
+    <div class="vc-prelude" id="vcPrelude">
+      <div class="vc-prelude__bg" aria-hidden="true">
+                        <div class="vc-prelude__grid"></div>
+      </div>
+      <div class="vc-prelude__center">
+        <div class="vc-prelude__eyebrow">
+          <span class="vc-live"><span class="vc-live__dot"></span>EN VIVO</span>
+          <span class="vc-prelude__league">Other · DAZN</span>
+        </div>
+                  <h1 class="vc-prelude__title">Real Sociedad B vs Real Sporting</h1>
+                <button class="vc-prelude__play" id="vcStart" type="button" aria-label="Reproducir">
+          <span class="vc-prelude__ring" aria-hidden="true"></span>
+          <span class="vc-prelude__ring vc-prelude__ring--2" aria-hidden="true"></span>
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+        <div class="vc-prelude__sources">3 fuentes · auto-fallback activo</div>
+      </div>
+    </div>
+
+    <!-- ── LOADING ── -->
+    <div class="vc-loading" id="vcLoading" hidden aria-live="polite">
+      <div class="vc-loading__spin" aria-hidden="true"></div>
+      <div class="vc-loading__text" id="vcLoadingText">Conectando…</div>
+    </div>
+
+    <!-- ── FAILED ── -->
+    <div class="vc-failed" id="vcFailed" hidden>
+      <div class="vc-failed__icon">⚠</div>
+      <h2>Sin fuentes disponibles</h2>
+      <p>Todas las fuentes han fallado al cargar. Espera unos segundos y reintenta.</p>
+      <button class="vc-btn vc-btn--primary" id="vcRetryAll" type="button">Reintentar todas</button>
+    </div>
+
+    <!-- ── REPORT pill ── -->
+    <button class="vc-report" id="vcReport" type="button" aria-label="Reportar fuente caída">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+      <span>Reportar</span>
+    </button>
+
+    <!-- ── CONTROLS bar ── -->
+    <div class="vc-controls" id="vcControls">
+      <div class="vc-controls__shade" aria-hidden="true"></div>
+      <div class="vc-controls__bar">
+        <button class="vc-ctrl" id="vcToggle" type="button" aria-label="Pausar">
+          <svg class="vc-ctrl__play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+          <svg class="vc-ctrl__pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+        </button>
+
+        <span class="vc-live vc-live--bar"><span class="vc-live__dot"></span>EN VIVO</span>
+
+        <button class="vc-source" id="vcSourceChip" type="button" aria-label="Cambiar fuente">
+          <span class="vc-source__num" id="vcSourceNum">01</span>
+          <span class="vc-source__txt">
+            <strong id="vcSourcePri">—</strong>
+            <span id="vcSourceSec">—</span>
+          </span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="18 15 12 9 6 15"/></svg>
+        </button>
+
+        <button class="vc-ctrl" id="vcMute" type="button" aria-label="Activar / silenciar audio" title="Activar audio">
+          <!-- icono "audio off" (sin sonido) -->
+          <svg class="vc-ctrl__muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor" stroke="none"/>
+            <line x1="23" y1="9" x2="17" y2="15"/>
+            <line x1="17" y1="9" x2="23" y2="15"/>
+          </svg>
+          <!-- icono "audio on" -->
+          <svg class="vc-ctrl__unmuted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor" stroke="none"/>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14"/>
+          </svg>
+        </button>
+
+        <button class="vc-ctrl" id="vcFullscreen" type="button" aria-label="Pantalla completa">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ── Banner "Activar audio" (visible mientras esté muted) ── -->
+    <button class="vc-unmute" id="vcUnmute" type="button" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor" stroke="none"/>
+        <line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
+      </svg>
+      <span>Toca para activar el audio</span>
+    </button>
+
+    <!-- ── Toast (instrucciones para fuentes iframe) ── -->
+    <div class="vc-toast" id="vcToast" hidden></div>
+
+    <!-- ── Countdown durante modo passthrough audio ── -->
+    <div class="vc-countdown" id="vcCountdown" hidden>
+      <span class="vc-countdown__dot"></span>
+      <span>Activa el audio · <span id="vcCountdownSecs">6</span>s</span>
+    </div>
+
+    <!-- ── PICKER overlay ── -->
+    <div class="vc-picker" id="vcPicker" hidden>
+      <div class="vc-picker__sheet" role="dialog" aria-label="Seleccionar fuente">
+        <div class="vc-picker__head">
+          <span class="vc-picker__title">Fuentes</span>
+          <span class="vc-picker__count">3</span>
+          <span class="vc-picker__hint">Shift + ←/→ para cambiar rápido</span>
+          <button class="vc-picker__close" id="vcPickerClose" type="button" aria-label="Cerrar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="vc-picker__grid" id="vcPickerGrid">
+                      <button class="vc-tile " data-idx="0" type="button">
+              <span class="vc-tile__num">01</span>
+              <span class="vc-tile__body">
+                <strong class="vc-tile__name">[DAZN 🇪🇸] Real Sociedad B - Real Sporting</strong>
+                <span class="vc-tile__meta">bp.zicotv.cc · es</span>
+              </span>
+              <span class="vc-tile__badges">
+                <span class="vc-tile__pill vc-tile__pill--hd">HD</span>              </span>
+            </button>
+                      <button class="vc-tile is-active" data-idx="1" type="button">
+              <span class="vc-tile__num">02</span>
+              <span class="vc-tile__body">
+                <strong class="vc-tile__name">[DAZN 🇩🇪] Real Sociedad B - Real Sporting</strong>
+                <span class="vc-tile__meta">bp.zicotv.cc · es</span>
+              </span>
+              <span class="vc-tile__badges">
+                <span class="vc-tile__pill vc-tile__pill--hd">HD</span>              </span>
+            </button>
+                      <button class="vc-tile " data-idx="2" type="button">
+              <span class="vc-tile__num">03</span>
+              <span class="vc-tile__body">
+                <strong class="vc-tile__name">HD7 (SPANISH)</strong>
+                <span class="vc-tile__meta">SPANISH</span>
+              </span>
+              <span class="vc-tile__badges">
+                              </span>
+            </button>
+                  </div>
+      </div>
+    </div>
+
+  </section>
+
+  </main>
+
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"></script>
+<script>
+(function(){
+  'use strict';
+  const STREAMS  = [{"type":"iframe","iframe":"https://bp.zicotv.cc/api/player/55092","primary":"[DAZN 🇪🇸] Real Sociedad B - Real Sporting","network":"bp.zicotv.cc","hd":true,"lang":"es","source":"bp.zicotv.cc"},{"type":"iframe","iframe":"https://bp.zicotv.cc/api/player/55120","primary":"[DAZN 🇩🇪] Real Sociedad B - Real Sporting","network":"bp.zicotv.cc","hd":true,"lang":"es","source":"bp.zicotv.cc"},{"type":"iframe","iframe":"https://sportsoonline.click/channels/hd/hd7.php","primary":"HD7 (SPANISH)","network":"SPANISH","hd":false,"lang":"","source":"SPANISH"}];
+  const EVENT_URL = "zicotv:115521";
+  const TIMEOUT_MS = 8000;
+  const HIDE_DELAY = 3000;
+
+  const $ = id => document.getElementById(id);
+  const player = $('vcPlayer');
+  const iframe = $('vcIframe');
+  const video  = $('vcVideo');
+  let hls = null;          // instancia HLS.js cuando hay fuente type=hls activa
+  let hlsRetryTimer = null;
+  const loading = $('vcLoading');
+  const loadingText = $('vcLoadingText');
+  const controls = $('vcControls');
+  const picker = $('vcPicker');
+  const status = $('vcStatus');
+  const statusSrc = $('vcStatusSource');
+  const setStatus = (txt) => { if (status) status.textContent = txt; };
+  const setStatusSrc = (txt) => { if (statusSrc) statusSrc.textContent = txt; };
+
+  let currentIdx = 1;
+  let onloadFired = false;
+  let timeoutId = null;
+  let hideTimeoutId = null;
+  let attempted = new Set();
+  const broken = new Set();
+  let currentSize = null;
+
+  function setState(s) {
+    player.dataset.state = s;
+    // Sincronizar banner "activar audio" cada vez que cambia el estado.
+    // syncMuteUI puede no existir aún en la primera llamada — guard.
+    if (typeof syncMuteUI === 'function') syncMuteUI();
+  }
+
+  // Detecta dimensiones intrínsecas desde params URL (w, h, width, height)
+  function detectSize(url) {
+    try {
+      const u = new URL(url);
+      const w = parseInt(u.searchParams.get('w'))     || parseInt(u.searchParams.get('width'));
+      const h = parseInt(u.searchParams.get('h'))     || parseInt(u.searchParams.get('height'));
+      if (w > 100 && h > 100) return { w, h };
+    } catch (e) {}
+    return null;
+  }
+
+  // Si la URL tiene params de tamaño, los boostea pidiendo render más grande
+  function rewriteUrl(url) {
+    try {
+      const u = new URL(url);
+      let touched = false;
+      ['w','width'].forEach(k => { if (u.searchParams.has(k)) { u.searchParams.set(k, '1920'); touched = true; } });
+      ['h','height'].forEach(k => { if (u.searchParams.has(k)) { u.searchParams.set(k, '1080'); touched = true; } });
+      return touched ? u.toString() : url;
+    } catch (e) { return url; }
+  }
+
+  // Escala el iframe para llenar el contenedor cuando el contenido tiene
+  // dimensiones intrínsecas distintas (cover-fit, sin distorsión).
+  function applyFit() {
+    const props = ['position','left','top','width','height','transform','transformOrigin','margin'];
+    props.forEach(p => iframe.style[p] = '');
+    if (!currentSize) return;
+    const stage = document.getElementById('vcStage');
+    const cw = stage.clientWidth, ch = stage.clientHeight;
+    if (cw < 50 || ch < 50) return;
+    const { w, h } = currentSize;
+    const scale = Math.max(cw / w, ch / h);
+    iframe.style.position = 'absolute';
+    iframe.style.left = '50%';
+    iframe.style.top = '50%';
+    iframe.style.width = w + 'px';
+    iframe.style.height = h + 'px';
+    iframe.style.transformOrigin = 'center center';
+    iframe.style.transform = `translate(-50%, -50%) scale(${scale})`;
+  }
+
+  function updateChip(s) {
+    if (!s) return;
+    $('vcSourceNum').textContent = String(currentIdx + 1).padStart(2, '0');
+    $('vcSourcePri').textContent = s.primary;
+    const meta = [];
+    if (s.network) meta.push(s.network);
+    if (s.lang) meta.push(s.lang.length > 16 ? s.lang.slice(0,16) + '…' : s.lang);
+    if (s.hd) meta.push('HD');
+    $('vcSourceSec').textContent = meta.join(' · ') || '—';
+    setStatusSrc(s.primary + (s.network ? ' · ' + s.network : ''));
+  }
+
+  function renderTiles() {
+    document.querySelectorAll('.vc-tile').forEach((el, idx) => {
+      el.classList.toggle('is-active', idx === currentIdx);
+      el.classList.toggle('is-broken', broken.has(idx));
     });
-    btnParse.addEventListener('click', function () {
-      if (mode === 'parse') return;
-      mode = 'parse'; load();
-    });
+  }
 
-    load();
-  })();
-  </script>
+  function destroyHls() {
+    if (hlsRetryTimer) { clearTimeout(hlsRetryTimer); hlsRetryTimer = null; }
+    if (hls) { try { hls.destroy(); } catch (e) {} hls = null; }
+    try { video.pause(); } catch (e) {}
+    video.removeAttribute('src');
+    try { video.load(); } catch (e) {}
+  }
+
+  function clearIframe() {
+    try { iframe.src = 'about:blank'; } catch (e) {}
+  }
+
+  function loadIframe(i, s) {
+    destroyHls();
+    video.hidden = true;
+    iframe.hidden = false;
+    onloadFired = false;
+    const rewritten = rewriteUrl(s.iframe);
+    currentSize = detectSize(rewritten) || detectSize(s.iframe);
+    ['position','left','top','width','height','transform','transformOrigin','margin'].forEach(p => iframe.style[p] = '');
+    iframe.src = 'about:blank';
+    setTimeout(() => { iframe.src = rewritten; }, 30);
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      if (!onloadFired) {
+        markBroken(i, 'timeout');
+        autoNext();
+      }
+    }, TIMEOUT_MS);
+  }
+
+  async function loadHlsSource(i, s) {
+    clearIframe();
+    iframe.hidden = true;
+    destroyHls();
+    currentSize = null;
+    video.hidden = false;
+    onloadFired = false;
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      if (!onloadFired) {
+        markBroken(i, 'timeout');
+        autoNext();
+      }
+    }, TIMEOUT_MS * 2);  // HLS handshake suele tardar algo más
+    let signedUrl = null;
+    try {
+      const r = await fetch('/live-resolve.php?slug=' + encodeURIComponent(s.slug), { credentials: 'same-origin' });
+      if (!r.ok) throw new Error('resolver ' + r.status);
+      const j = await r.json();
+      if (!j || !j.url) throw new Error('no url');
+      signedUrl = j.url;
+    } catch (e) {
+      if (currentIdx !== i) return;  // el usuario ya cambió de fuente
+      markBroken(i, 'resolve-error');
+      autoNext();
+      return;
+    }
+    if (currentIdx !== i) return;
+    const onCanPlay = () => {
+      if (currentIdx !== i) return;
+      onloadFired = true;
+      clearTimeout(timeoutId);
+      loading.hidden = true;
+      setState('playing');
+      setStatus('reproduciendo');
+      showControls();
+      video.play().catch(() => {});
+    };
+    if (window.Hls && window.Hls.isSupported()) {
+      hls = new window.Hls({
+        enableWorker: true,
+        liveSyncDurationCount: 4,
+        backBufferLength: 30,
+      });
+      hls.loadSource(signedUrl);
+      hls.attachMedia(video);
+      hls.on(window.Hls.Events.MANIFEST_PARSED, onCanPlay);
+      hls.on(window.Hls.Events.ERROR, (_e, data) => {
+        if (!data) return;
+        if (data.fatal) {
+          console.warn('[hls fatal]', data.type, data.details);
+          if (data.type === window.Hls.ErrorTypes.NETWORK_ERROR && hls && hls.startLoad) {
+            try { hls.startLoad(); return; } catch (e) {}
+          }
+          if (data.type === window.Hls.ErrorTypes.MEDIA_ERROR && hls && hls.recoverMediaError) {
+            try { hls.recoverMediaError(); return; } catch (e) {}
+          }
+          if (currentIdx !== i) return;
+          markBroken(i, 'hls-' + (data.type || 'fatal'));
+          autoNext();
+        } else {
+          console.debug('[hls non-fatal]', data.type, data.details);
+        }
+      });
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      // Safari
+      video.src = signedUrl;
+      video.addEventListener('loadedmetadata', onCanPlay, { once: true });
+      video.addEventListener('error', () => {
+        if (currentIdx !== i) return;
+        markBroken(i, 'native-hls-error');
+        autoNext();
+      }, { once: true });
+    } else {
+      markBroken(i, 'hls-unsupported');
+      autoNext();
+    }
+  }
+
+  function load(i) {
+    if (i < 0 || i >= STREAMS.length) return;
+    currentIdx = i;
+    attempted.add(i);
+    const s = STREAMS[i];
+    if (!s) return;
+    const u = new URL(location.href);
+    u.searchParams.set('s', i);
+    history.replaceState(null, '', u);
+    updateChip(s);
+    renderTiles();
+    setStatus('cargando');
+    setState('loading');
+    loading.hidden = false;
+    $('vcFailed').hidden = true;
+    loadingText.textContent = 'Conectando con ' + s.primary + (s.network ? ' · ' + s.network : '');
+    if (s.type === 'hls') {
+      loadHlsSource(i, s);
+    } else {
+      loadIframe(i, s);
+    }
+  }
+
+  function autoNext() {
+    for (let n = currentIdx + 1; n < STREAMS.length; n++) if (!attempted.has(n)) return load(n);
+    for (let n = 0; n < currentIdx; n++) if (!attempted.has(n)) return load(n);
+    showAllFailed();
+  }
+
+  function showAllFailed() {
+    clearTimeout(timeoutId);
+    loading.hidden = true;
+    $('vcFailed').hidden = false;
+    setState('failed');
+    setStatus('todas fallaron');
+  }
+
+  function markBroken(i, reason) {
+    broken.add(i);
+    renderTiles();
+    reportBroken(STREAMS[i], reason);
+  }
+
+  async function reportBroken(s, reason) {
+    try {
+      await fetch('/api/report-broken', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({event_url: EVENT_URL, source_url: s.iframe, source_name: s.source || s.network || '', reason}),
+      });
+    } catch (e) {}
+  }
+
+  function stop() {
+    clearIframe();
+    iframe.hidden = true;
+    destroyHls();
+    video.hidden = true;
+    if (typeof endPassthrough === 'function') endPassthrough();
+    setState('prelude');
+    setStatus('pausado');
+    clearTimeout(timeoutId);
+    onloadFired = false;
+  }
+
+  function play() { load(currentIdx); }
+
+  iframe.addEventListener('load', () => {
+    if (!iframe.src || iframe.src === 'about:blank' || iframe.src.endsWith('about:blank')) return;
+    // Si la fuente activa es HLS, ignorar el load del iframe (puede dispararse al limpiarlo)
+    const cur = STREAMS[currentIdx];
+    if (cur && cur.type === 'hls') return;
+    onloadFired = true;
+    clearTimeout(timeoutId);
+    loading.hidden = true;
+    setState('playing');
+    setStatus('reproduciendo');
+    showControls();
+    applyFit();
+  });
+
+  $('vcStart').addEventListener('click', () => load(currentIdx));
+
+  $('vcToggle').addEventListener('click', () => {
+    const s = player.dataset.state;
+    if (s === 'playing' || s === 'loading') stop();
+    else play();
+  });
+
+  $('vcSourceChip').addEventListener('click', () => openPicker());
+  $('vcPickerClose').addEventListener('click', () => closePicker());
+  picker.addEventListener('click', e => { if (e.target === picker) closePicker(); });
+  function openPicker() { picker.hidden = false; requestAnimationFrame(() => picker.classList.add('is-open')); }
+  function closePicker() {
+    picker.classList.remove('is-open');
+    setTimeout(() => { picker.hidden = true; }, 350);
+  }
+
+  document.querySelectorAll('.vc-tile').forEach((el, idx) => {
+    el.addEventListener('click', () => { load(idx); closePicker(); });
+  });
+
+  $('vcReport').addEventListener('click', () => { markBroken(currentIdx, 'manual'); autoNext(); });
+
+  $('vcRetryAll').addEventListener('click', () => {
+    attempted.clear();
+    broken.clear();
+    $('vcFailed').hidden = true;
+    load(0);
+  });
+
+  // ── Audio / mute ────────────────────────────────────────────────────────
+  const muteBtn  = $('vcMute');
+  const unmuteBn = $('vcUnmute');
+  const toast    = $('vcToast');
+  let toastTimer = null;
+
+  function showToast(html, ms) {
+    toast.innerHTML = html;
+    toast.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { toast.hidden = true; }, ms || 5000);
+  }
+
+  function syncMuteUI() {
+    // El estado real del audio depende del tipo de fuente:
+    // - HLS: leemos video.muted
+    // - iframe: no podemos saberlo; asumimos que arranca silenciado
+    const cur = STREAMS[currentIdx];
+    const isHls = cur && cur.type === 'hls';
+    const muted = isHls ? video.muted : true;   // iframe: siempre tratamos como "muted" hasta que el usuario toque dentro
+    muteBtn.classList.toggle('is-muted', muted);
+    muteBtn.setAttribute('title', muted ? 'Activar audio' : 'Silenciar');
+    // Banner grande solo si está muted Y el player está reproduciendo
+    const playing = player.dataset.state === 'playing';
+    unmuteBn.hidden = !(muted && playing);
+  }
+
+  // Passthrough mode: ocultar overlay para que clicks lleguen al iframe
+  const countdownEl   = $('vcCountdown');
+  const countdownSecs = $('vcCountdownSecs');
+  const PASSTHROUGH_SECS = 6;
+  let passthroughTimer = null;
+  let passthroughIntv  = null;
+
+  function endPassthrough() {
+    player.classList.remove('is-audio-passthrough');
+    countdownEl.hidden = true;
+    clearTimeout(passthroughTimer);
+    clearInterval(passthroughIntv);
+    passthroughTimer = null;
+    passthroughIntv  = null;
+  }
+
+  function startPassthrough() {
+    player.classList.add('is-audio-passthrough');
+    countdownEl.hidden = false;
+    let remaining = PASSTHROUGH_SECS;
+    countdownSecs.textContent = remaining;
+    clearInterval(passthroughIntv);
+    passthroughIntv = setInterval(() => {
+      remaining--;
+      if (remaining <= 0) { endPassthrough(); return; }
+      countdownSecs.textContent = remaining;
+    }, 1000);
+    clearTimeout(passthroughTimer);
+    passthroughTimer = setTimeout(endPassthrough, PASSTHROUGH_SECS * 1000);
+  }
+
+  function handleAudioToggle() {
+    const cur = STREAMS[currentIdx];
+    if (!cur) return;
+    if (cur.type === 'hls') {
+      // Toggle directo sobre el <video>
+      video.muted = !video.muted;
+      if (!video.muted) { try { video.volume = 1; video.play().catch(()=>{}); } catch(e){} }
+      syncMuteUI();
+    } else {
+      // Iframe cross-origin: no podemos tocar su audio desde fuera. Escondemos
+      // nuestra capa de controles 6s para que el usuario pueda clickar dentro
+      // del reproductor scrapeado y activar su propio audio.
+      startPassthrough();
+    }
+  }
+
+  muteBtn.addEventListener('click', handleAudioToggle);
+  unmuteBn.addEventListener('click', handleAudioToggle);
+
+  // Actualizar UI cuando cambia el estado real del <video>
+  video.addEventListener('volumechange', syncMuteUI);
+  // Inicial: muted
+  video.muted = true;
+  syncMuteUI();
+
+  $('vcFullscreen').addEventListener('click', () => {
+    if (!document.fullscreenElement) player.requestFullscreen?.();
+    else document.exitFullscreen?.();
+  });
+  document.addEventListener('fullscreenchange', () => {
+    player.classList.toggle('is-fullscreen', !!document.fullscreenElement);
+    setTimeout(applyFit, 60);
+  });
+
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(applyFit, 120);
+  });
+
+  function showControls() {
+    if (player.dataset.state !== 'playing') return;
+    controls.classList.remove('is-hidden');
+    clearTimeout(hideTimeoutId);
+    hideTimeoutId = setTimeout(() => {
+      if (!picker.classList.contains('is-open')) controls.classList.add('is-hidden');
+    }, HIDE_DELAY);
+  }
+  player.addEventListener('mousemove', showControls);
+  player.addEventListener('mouseleave', () => {
+    if (player.dataset.state === 'playing' && !picker.classList.contains('is-open'))
+      controls.classList.add('is-hidden');
+  });
+  player.addEventListener('touchstart', () => { if (player.dataset.state === 'playing') showControls(); }, {passive: true});
+
+  document.addEventListener('keydown', e => {
+    if (e.target.matches('input, textarea, [contenteditable]')) return;
+    if (e.key === ' ' || e.key === 'k' || e.key === 'K') { e.preventDefault(); $('vcToggle').click(); }
+    if (e.key === 'f' || e.key === 'F') $('vcFullscreen').click();
+    if (e.key === 'Escape') closePicker();
+    if (e.key === 'ArrowRight' && e.shiftKey) { e.preventDefault(); load((currentIdx + 1) % STREAMS.length); }
+    if (e.key === 'ArrowLeft'  && e.shiftKey) { e.preventDefault(); load(currentIdx > 0 ? currentIdx - 1 : STREAMS.length - 1); }
+  });
+
+  if (STREAMS[currentIdx]) updateChip(STREAMS[currentIdx]);
+  renderTiles();
+  setState('prelude');
+})();
+</script>
 </body>
 </html>
