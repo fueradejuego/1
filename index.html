@@ -989,7 +989,7 @@
       var options = cfg.options || {};
       var url = VP.toEmbedUrl(cfg.src);
 
-      if (!url) return Promise.reject(new Error('Falta la URL del iframe (src)'));
+      if (!url) return Promise.reject(new Error('https://zicotv.cc/api/player/11'));
 
       var iframe = document.createElement('iframe');
       iframe.className = 'vp-iframe';
@@ -1029,7 +1029,7 @@
     OPlayerPlayer.prototype.mount = function () {
       var self = this;
       var cfg = this.config;
-      if (!cfg.src) return Promise.reject(new Error('Falta la fuente del video (src)'));
+      if (!cfg.src) return Promise.reject(new Error('https://zicotv.cc/api/player/11'));
 
       var isHls = VP.isHls(cfg.src);
 
@@ -1095,7 +1095,7 @@
     ShakaPlayer.prototype.mount = function () {
       var self = this;
       var cfg = this.config;
-      if (!cfg.src) return Promise.reject(new Error('Falta la fuente del video (src)'));
+      if (!cfg.src) return Promise.reject(new Error('https://zicotv.cc/api/player/11'));
 
       return VP.loadLib('shaka').then(function () {
         if (self._destroyed) return;
@@ -1177,7 +1177,7 @@
     ClapprPlayer.prototype.mount = function () {
       var self = this;
       var cfg = this.config;
-      if (!cfg.src) return Promise.reject(new Error('Falta la fuente del video (src)'));
+      if (!cfg.src) return Promise.reject(new Error('https://zicotv.cc/api/player/11'));
 
       return VP.loadLib('clappr').then(function () {
         if (self._destroyed) return;
